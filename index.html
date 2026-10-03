@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Any Sound">
+    <meta name="description" content="Any Sound - 多平台聚合免费音乐播放器，支持网易云、酷我、酷狗">
+    <meta name="application-name" content="Any Sound">
+    <title>Any Sound - 免费音乐播放器 - Free player</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="anysound_icon_new.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="fpsCounter" style="display:none;">60 FPS</div>
+    <div class="page-loader" id="pageLoader">
+        <div class="win-spinner"><div class="win-spinner-wrapper"><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div></div></div>
+        <p class="page-loader-text">正在载入数据...</p>
+    </div>
+    <div class="dynamic-background" id="dynamicBackground"></div>
+
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <nav class="top-nav" id="topNav">
+            <button class="hamburger-menu" id="hamburgerMenu">
+                <span></span>
+            </button>
+
+            <div class="logo">
+                <img src="anysound_icon_new.png" alt="Any Sound" class="logo-icon">
+                <span>Any Sound</span>
+                <span class="hd-badge" id="hdBadge" style="display: none;">HD</span>
+            </div>
+
+            <!-- 大屏幕搜索区域（折叠式） -->
+            <div class="nav-search-area">
+                <div class="nav-search-wrapper" id="navSearchWrapper">
+                <div class="nav-search-container" id="navSearchContainer">
+                    <input type="text" class="nav-search-input" id="navSearchInput" placeholder="搜索歌曲、歌手..." autocomplete="off">
+                    <button class="nav-search-btn" id="navSearchBtn"><i class="fas fa-search"></i></button>
+                    <!-- 点击搜索框时展开的下拉面板 -->
+                    <div class="nav-search-dropdown" id="navSearchDropdown">
+                        <div class="search-history-header">
+                            <span>搜索历史</span>
+                            <button class="clear-history-btn" id="clearSearchHistoryBtn">清空</button>
+                        </div>
+                        <div class="search-history-list" id="searchHistoryList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 平台切换下拉 -->
+            <div class="platform-dropdown" id="platformDropdown">
+                <button class="platform-dropdown-btn" id="platformDropdownBtn">
+                    <span class="platform-dropdown-label" id="platformDropdownLabel">聚合搜索</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="platform-dropdown-menu" id="platformDropdownMenu">
+                    <button class="platform-dropdown-item" data-platform="netease"><i class="fas fa-cloud"></i> 冈易云</button>
+                    <button class="platform-dropdown-item" data-platform="kuwo"><i class="fas fa-music"></i> 酷我/酷狗</button>
+                    <button class="platform-dropdown-item active" data-platform="all"><i class="fas fa-globe"></i> 聚合搜索</button>
+                </div>
+            </div>
+        </div>
+
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div id="userStatus"></div>
+            </div>
+        </nav>
+
+        <div class="overlay" id="overlay"></div>
+
+        <!-- 侧边栏 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="nav-section">
+                <div class="section-title">浏览</div>
+                <a href="#" class="nav-item active" data-page="home"><div class="nav-icon"><i class="fas fa-home"></i></div><div class="nav-text">发现音乐</div></a>
+                <a href="#" class="nav-item" data-page="favorites"><div class="nav-icon"><i class="fas fa-heart"></i></div><div class="nav-text">我的收藏</div><span class="badge" id="favoritesCount">0</span></a>
+                <a href="#" class="nav-item" data-page="history"><div class="nav-icon"><i class="fas fa-history"></i></div><div class="nav-text">播放历史</div><span class="badge" id="historyCount">0</span></a>
+                <a href="#" class="nav-item" data-page="hotlist"><div class="nav-icon"><i class="fas fa-fire"></i></div><div class="nav-text">排行榜</div></a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">歌单</div>
+                <a href="#" class="nav-item" data-page="playlists"><div class="nav-icon"><i class="fas fa-list"></i></div><div class="nav-text">播放列表</div></a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">搜索</div>
+                <a href="#" class="nav-item" data-page="search"><div class="nav-icon"><i class="fas fa-search"></i></div><div class="nav-text">搜索音乐</div></a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">支持</div>
+                <a href="#" class="nav-item" id="donationBtn"><div class="nav-icon"><i class="fas fa-heartbeat"></i></div><div class="nav-text">支持我们</div></a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">移动端</div>
+                <a href="#" class="nav-item" id="downloadAppBtn"><div class="nav-icon"><i class="fas fa-download"></i></div><div class="nav-text">下载APP版(Beta)</div></a>
+            </div>
+            <div class="nav-section">
+                <div class="section-title">设置</div>
+                <a href="#" class="nav-item" id="settingsNavBtn"><div class="nav-icon"><i class="fas fa-cog"></i></div><div class="nav-text">设置</div></a>
+                <a href="#" class="nav-item" id="aboutNavBtn"><div class="nav-icon"><i class="fas fa-info-circle"></i></div><div class="nav-text">关于我们</div></a>
+            </div>
+            <div class="sidebar-toggle-desktop" id="sidebarToggleDesktop">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main-content" id="mainContent">
+            <!-- 搜索卡片（移动端显示） -->
+            <div class="content-card mobile-search-card" id="mobileSearchCard">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索歌曲、歌手或专辑..." autocomplete="off">
+                    <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+                <!-- 移动端平台切换 -->
+                <div class="platform-dropdown mobile" id="mobilePlatformDropdown">
+                    <button class="platform-dropdown-btn" id="mobilePlatformDropdownBtn">
+                        <span class="platform-dropdown-label" id="mobilePlatformDropdownLabel">聚合搜索</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="platform-dropdown-menu" id="mobilePlatformDropdownMenu">
+                        <button class="platform-dropdown-item" data-platform="netease"><i class="fas fa-cloud"></i> 冈易云</button>
+                        <button class="platform-dropdown-item" data-platform="kuwo"><i class="fas fa-music"></i> 酷我/酷狗</button>
+                        <button class="platform-dropdown-item active" data-platform="all"><i class="fas fa-globe"></i> 聚合搜索</button>
+                    </div>
+                </div>
+                <!-- 移动端搜索历史 -->
+                <div class="search-history-dropdown mobile" id="mobileSearchHistoryDropdown">
+                    <div class="search-history-header">
+                        <span>搜索历史</span>
+                        <button class="clear-history-btn" id="mobileClearSearchHistoryBtn">清空</button>
+                    </div>
+                    <div class="search-history-list" id="mobileSearchHistoryList"></div>
+                </div>
+                <div class="error-message" id="errorMessage"><i class="fas fa-exclamation-circle"></i><span id="errorText">发生错误，请稍后再试</span></div>
+            </div>
+
+            <!-- 发现音乐 -->
+            <div class="page-content active" id="pageHome">
+                <div class="content-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                        <h2 style="font-size:20px;font-weight:600;">发现音乐 - 热歌榜精选</h2>
+                        <button class="btn" id="refreshTrendingBtn" style="width:auto;padding:8px 16px;"><i class="fas fa-sync-alt"></i><span>刷新推荐</span></button>
+                    </div>
+                    <div class="songs-grid" id="trendingList">
+                        <div class="empty-state"><i class="fas fa-music"></i><h3>欢迎使用 Any Sound</h3><p>正在载入热歌榜精选音乐...</p><button class="btn" id="btnLoadTrending" style="width:auto;padding:8px 16px;margin-top:15px;"><i class="fas fa-fire"></i><span>载入热歌榜</span></button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 收藏 -->
+            <div class="page-content" id="pageFavorites">
+                <div class="content-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                        <h2 style="font-size:20px;font-weight:600;">我的收藏</h2>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn batch-mode-btn" id="favoritesBatchBtn" style="width:auto;padding:8px 16px;font-size:12px;"><i class="fas fa-check-square"></i> 批量操作</button>
+                            <button class="btn" id="clearFavoritesBtn" style="width:auto;padding:8px 16px;background:transparent;border:1px solid var(--glass-border);"><i class="fas fa-trash-alt"></i><span>清空收藏</span></button>
+                            <button class="btn" id="importFavoritesBtn" style="width:auto;padding:8px 16px;"><i class="fas fa-upload"></i><span>导入列表</span></button>
+                            <button class="btn" id="exportFavoritesBtn" style="width:auto;padding:8px 16px;"><i class="fas fa-download"></i><span>导出列表</span></button>
+                        </div>
+                    </div>
+                    <input type="file" id="importFavoritesFile" accept=".json" style="display:none;">
+                    <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
+                        <div style="background:rgba(108,92,231,0.1);padding:12px 15px;border-radius:10px;display:flex;flex-direction:column;align-items:center;min-width:100px;flex:1;"><div style="font-size:20px;font-weight:700;color:var(--primary);margin-bottom:3px;" id="totalFavorites">0</div><div style="font-size:12px;color:var(--text-secondary);">收藏歌曲</div></div>
+                        <div style="background:rgba(108,92,231,0.1);padding:12px 15px;border-radius:10px;display:flex;flex-direction:column;align-items:center;min-width:100px;flex:1;"><div style="font-size:20px;font-weight:700;color:var(--primary);margin-bottom:3px;" id="totalDuration">0:00</div><div style="font-size:12px;color:var(--text-secondary);">总时长</div></div>
+                    </div>
+                    <div class="songs-grid" id="favoritesList"></div>
+                </div>
+            </div>
+
+            <!-- 历史 -->
+            <div class="page-content" id="pageHistory">
+                <div class="content-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                        <h2 style="font-size:20px;font-weight:600;">播放历史</h2>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button class="btn batch-mode-btn" id="historyBatchBtn" style="width:auto;padding:8px 16px;font-size:12px;"><i class="fas fa-check-square"></i> 批量操作</button>
+                            <button class="btn" id="refreshHistoryBtn" style="width:auto;padding:8px 16px;"><i class="fas fa-sync-alt"></i><span>刷新</span></button>
+                            <button class="btn" id="clearHistoryBtn" style="width:auto;padding:8px 16px;background:transparent;border:1px solid var(--glass-border);"><i class="fas fa-trash-alt"></i><span>清空历史</span></button>
+                            <button class="btn" id="importHistoryBtn" style="width:auto;padding:8px 16px;"><i class="fas fa-upload"></i><span>导入历史</span></button>
+                            <button class="btn" id="exportHistoryBtn" style="width:auto;padding:8px 16px;"><i class="fas fa-download"></i><span>导出历史</span></button>
+                        </div>
+                    </div>
+                    <input type="file" id="importHistoryFile" accept=".json" style="display:none;">
+                    <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;">
+                        <div style="background:rgba(108,92,231,0.1);padding:12px 15px;border-radius:10px;display:flex;flex-direction:column;align-items:center;min-width:100px;flex:1;"><div style="font-size:20px;font-weight:700;color:var(--primary);margin-bottom:3px;" id="totalHistory">0</div><div style="font-size:12px;color:var(--text-secondary);">历史记录</div></div>
+                        <div style="background:rgba(108,92,231,0.1);padding:12px 15px;border-radius:10px;display:flex;flex-direction:column;align-items:center;min-width:100px;flex:1;"><div style="font-size:20px;font-weight:700;color:var(--primary);margin-bottom:3px;" id="totalHistoryDuration">0:00</div><div style="font-size:12px;color:var(--text-secondary);">总播放时长</div></div>
+                    </div>
+                    <div class="songs-grid" id="historyList"></div>
+                </div>
+            </div>
+
+            <!-- 排行榜 -->
+            <div class="page-content" id="pageHotlist">
+                <div class="content-card">
+                    <div class="chart-header">
+                        <img src="" alt="热歌榜封面" class="chart-cover" id="chartCover">
+                        <div class="chart-info" id="chartInfo"><h2>热歌榜</h2><p>网易云热歌榜：点击"载入榜单"即可显示</p></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                        <h2 style="font-size:20px;font-weight:600;">排行榜单</h2>
+                        <button class="btn" id="refreshHotlistBtn" style="width:auto;padding:8px 16px;"><i class="fas fa-sync-alt"></i><span>刷新榜单</span></button>
+                    </div>
+                    <div class="chart-tabs">
+                        <button class="chart-tab active" data-type="热歌榜">热歌榜</button>
+                        <button class="chart-tab" data-type="新歌榜">新歌榜</button>
+                        <button class="chart-tab" data-type="飙升榜">飙升榜</button>
+                        <button class="chart-tab" data-type="原创榜">原创榜</button>
+                    </div>
+                    <div id="hotSongList"></div>
+                </div>
+            </div>
+
+            <!-- 搜索页面 -->
+            <div class="page-content" id="pageSearch">
+                <div class="content-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                        <h2 style="font-size:20px;font-weight:600;">搜索结果</h2>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <div style="font-size:13px;color:var(--text-secondary);background:rgba(108,92,231,0.1);padding:6px 12px;border-radius:15px;font-weight:500;" id="resultsCount">输入关键词搜索</div>
+                            <button class="btn batch-mode-btn" id="searchBatchBtn" style="width:auto;padding:6px 14px;font-size:12px;"><i class="fas fa-check-square"></i> 批量操作</button>
+                        </div>
+                    </div>
+                    <div class="songs-grid" id="resultsList"></div>
+                </div>
+            </div>
+
+            <!-- 浮空歌词 -->
+            <div class="floating-lyrics" id="floatingLyrics">
+                <p class="floating-lyrics-text" id="floatingLyricsText"></p>
+                <p class="floating-lyrics-trans" id="floatingLyricsTrans"></p>
+            </div>
+
+            <!-- 底部播放器 -->
+            <div class="player-container" id="playerContainer">
+                <div class="player-left">
+                    <div class="player-cover" id="nowPlayingCover"><i class="fas fa-music"></i></div>
+                    <div class="player-info"><h3 id="nowPlayingTitle">Any Sound - 听你想听</h3><p id="nowPlayingArtist">-</p></div>
+                </div>
+                <div class="player-center">
+                    <div class="player-controls">
+                        <button class="control-btn" id="prevBtn"><i class="fas fa-step-backward"></i></button>
+                        <button class="play-pause-btn" id="playPauseBtn"><i class="fas fa-play" id="playIcon"></i></button>
+                        <button class="control-btn" id="nextBtn"><i class="fas fa-step-forward"></i></button>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"><div class="progress" id="progress"></div></div>
+                        <div class="time-display"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+                    </div>
+                </div>
+                <div class="player-right">
+                    <button class="control-btn" id="queueBtn" title="播放队列"><i class="fas fa-list-ul"></i></button>
+                    <div class="volume-btn-wrapper" id="volumeBtnWrapper">
+                        <button class="control-btn volume-btn" id="volumeBtn" title="音量">
+                            <i class="fas fa-volume-up" id="volumeIcon"></i>
+                        </button>
+                        <div class="volume-dropdown" id="volumeDropdown">
+                            <div class="volume-slider" id="volumeSlider"><div class="volume-level" id="volumeLevel"></div></div>
+                        </div>
+                    </div>
+                    <div class="quality-selector">
+                        <button class="quality-btn" id="qualityDropdownBtn">
+                            <span id="qualityLabel">母带</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="quality-dropdown" id="qualityDropdown">
+                            <div class="quality-dropdown-item active" data-quality="hires">母带 <span class="quality-desc">高解析度</span></div>
+                            <div class="quality-dropdown-item" data-quality="lossless">无损 <span class="quality-desc">CD 音质</span></div>
+                            <div class="quality-dropdown-item" data-quality="exhigh">极高 <span class="quality-desc">320kbps</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置模态窗 -->
+            <div class="modal" id="settingsModal">
+                <div class="modal-content settings-modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">设置</h2>
+                        <button class="close-btn" id="closeSettingsModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="settings-grid" id="settingsGrid"></div>
+                    <div id="devOptionsBtnWrap" style="margin-top:12px;text-align:left;display:none;">
+                        <button class="btn" id="devOptionsBtn" style="width:auto;padding:8px 16px;font-size:13px;">
+                            <i class="fas fa-code"></i> 开发者选项
+                        </button>
+                    </div>
+                    <div style="margin-top:24px;text-align:right;">
+                        <button class="btn" id="settingsCloseBtn" style="width:auto;padding:10px 28px;">完成</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 开发者选项模态窗 -->
+            <div class="modal" id="devOptionsModal">
+                <div class="modal-content settings-modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">开发者选项</h2>
+                        <button class="close-btn" id="closeDevOptionsModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="settings-grid" id="devOptionsGrid"></div>
+                    <div style="margin-top:24px;text-align:right;">
+                        <button class="btn" id="devOptionsCloseBtn" style="width:auto;padding:10px 28px;">完成</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 登录模态框 -->
+            <div class="modal" id="loginModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">登录 Any Sound</h2>
+                        <button class="close-btn" id="closeLoginModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" id="loginTabBtn">登录</button>
+                        <button class="tab-btn" id="registerTabBtn">注册</button>
+                    </div>
+                    <div id="loginForm">
+                        <div class="form-group"><label class="form-label" for="loginEmail">邮箱</label><input type="email" id="loginEmail" class="form-input" placeholder="请输入邮箱" autocomplete="username"></div>
+                        <div class="form-group"><label class="form-label" for="loginPassword">密码</label><input type="password" id="loginPassword" class="form-input" placeholder="请输入密码" autocomplete="current-password"></div>
+                        <div class="form-group"><label class="custom-checkbox"><input type="checkbox" id="rememberMe"><span class="checkmark-box"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> 记住我</label></div>
+                        <button class="btn" id="loginBtn">登录</button>
+                    </div>
+                    <div id="registerForm" style="display:none;">
+                        <div class="form-group"><label class="form-label" for="registerUsername">用户名</label><input type="text" id="registerUsername" class="form-input" placeholder="请输入用户名" autocomplete="username"></div>
+                        <div class="form-group"><label class="form-label" for="registerEmail">邮箱</label><input type="email" id="registerEmail" class="form-input" placeholder="请输入邮箱" autocomplete="email"></div>
+                        <div class="form-group"><label class="form-label" for="registerPassword">密码</label><input type="password" id="registerPassword" class="form-input" placeholder="请输入密码（至少6位）" autocomplete="new-password"></div>
+                        <div class="form-group"><label class="form-label" for="confirmPassword">确认密码</label><input type="password" id="confirmPassword" class="form-input" placeholder="请再次输入密码" autocomplete="new-password"></div>
+                        <div class="form-group"><div class="terms-agreement"><label class="custom-checkbox"><input type="checkbox" id="termsAgreement"><span class="checkmark-box"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>我已阅读并同意<a href="#" id="termsLink">《Any Sound使用条款》</a></label></div></div>
+                        <button class="btn" id="registerBtn">注册</button>
+                    </div>
+                    <div class="error-message" id="authError" style="margin-top:20px;"><i class="fas fa-exclamation-circle"></i><span id="authErrorText">发生错误，请稍后再试</span></div>
+                </div>
+            </div>
+
+            <!-- 捐赠 -->
+            <div class="modal" id="donationModal">
+                <div class="modal-content donation-modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">整合不易，感谢支持</h2>
+                        <button class="close-btn" id="closeDonationModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="donation-qr-container">
+                        <div class="qr-item"><div class="qr-image"><img src="skm1.png" alt="微信无限制收款码" onerror="this.src='https://via.placeholder.com/200x200/6c5ce7/ffffff?text=微信'"></div><div class="qr-description">微信支付(无限制)</div></div>
+                        <div class="qr-item"><div class="qr-image"><img src="skm2.png" alt="微信赞赏收款码" onerror="this.src='https://via.placeholder.com/200x200/00cec9/ffffff?text=微信'"></div><div class="qr-description">微信赞赏</div></div>
+                    </div>
+                    <div class="donation-note"><i>"一分钱也是爱"</i></div>
+                </div>
+            </div>
+
+            <!-- 公告 -->
+            <div class="modal" id="announcementModal">
+                <div class="modal-content announcement-modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">📢 公告</h2>
+                        <button class="close-btn" id="closeAnnouncementModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="announcement-content" id="announcementContent"></div>
+                    <div class="announcement-footer">
+                        <label class="custom-checkbox"><input type="checkbox" id="dontShowAgainCheckbox"><span class="checkmark-box"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> 不再显示(有新公告时再显示)</label>
+                        <button class="btn" id="confirmAnnouncementBtn">关闭</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 条款 -->
+            <div class="modal" id="termsModal">
+                <div class="modal-content terms-modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Any Sound使用条款</h2>
+                        <button class="close-btn" id="closeTermsModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="terms-content">
+                        <h3>使用条款&免责声明</h3>
+                        <p><strong>尊敬的Any Sound用户：</strong></p>
+                        <p>在使用本软件之前，请您务必仔细阅读并理解本免责声明的全部内容。如您不同意本声明的任何条款，请立即停止使用本软件。您对本软件的任何使用行为都将被视为对本声明全部内容的完全接受。</p>
+                        <h4>第壹条 软件性质声明</h4>
+                        <p>Any Sound（以下简称"本软件"）是一款免费的音乐播放器，旨在为用户提供便捷的音乐搜索和播放体验。本软件是一个技术工具，本身不存储、不生产、不传播任何音乐内容。</p>
+                        <h4>第贰条 版权与合法性声明</h4>
+                        <p>1. 本软件提供的所有音乐资源均来源于网络公开API接口，用户通过本软件获取的音乐内容由第三方服务器提供。</p>
+                        <p>2. 本软件开发者不对音乐内容的版权负责，所有音乐作品的版权均归其原作者、唱片公司或其他合法权利人所有。</p>
+                        <p>3. 用户在使用本软件时，应自行判断所获取音乐内容的合法性，并承担由此产生的一切法律责任。</p>
+                        <h4>第叁条 用户责任与义务</h4>
+                        <p>1. 用户应确保使用本软件的行为符合所在国家或地区的法律法规。</p>
+                        <p>2. 用户不得利用本软件从事任何违法、侵权或不道德的行为。</p>
+                        <p>3. 用户应对其使用本软件过程中的所有行为承担完全的法律责任。</p>
+                        <p>4. 用户不得对本软件进行反向工程、反编译、破解或任何形式的修改。</p>
+                        <h4>第肆条 免责范围</h4>
+                        <p>本软件开发者在任何情况下都不对以下事项承担责任：</p>
+                        <ul><li>因使用本软件导致的任何直接、间接、偶然、特殊或后果性损害</li><li>因网络问题、服务器问题、API接口变更等不可抗力因素导致的服务中断</li><li>用户因使用本软件而遭受的任何法律风险或经济风险</li><li>用户因下载、传播、使用第三方音乐内容而产生的版权纠纷</li><li>因用户设备问题、操作失误或其他个人原因导致的任何损失</li><li>任何第三方软件或服务与本软件的兼容性问题</li></ul>
+                        <h4>第伍条 数据安全与隐私</h4>
+                        <p>1. 本软件仅在用户本地设备存储用户数据（收藏、历史记录等），不会上传到任何服务器。</p>
+                        <p>2. 用户应自行负责其设备的安全防护和数据备份。</p>
+                        <p>3. 本软件不对用户数据的丢失、泄露或损坏承担任何责任。</p>
+                        <h4>第陆条 知识产权保护</h4>
+                        <p>1. 本软件界面设计、源代码、技术方案等知识产权归开发者所有。</p>
+                        <p>2. 用户不得未经许可复制、修改、分发本软件的任何部分。</p>
+                        <p>3. 本软件名称"Any Sound"及相关标识均为开发者所有。</p>
+                        <h4>第柒条 服务变更与终止</h4>
+                        <p>1. 本软件开发者保留随时修改、暂停或终止本软件服务的权利。</p>
+                        <p>2. 本软件可能因技术更新、政策变化等原因进行功能调整。</p>
+                        <p>3. 用户使用本软件即表示接受随时可能发生的服务变更。</p>
+                        <h4>第捌条 法律适用与管辖</h4>
+                        <p>1. 本声明的解释、执行及争议的解决均适用中华人民共和国法律。</p>
+                        <p>2. 如发生任何争议，应首先通过友好协商解决。</p>
+                        <p>3. 协商不成的，任何一方均可向有管辖权的人民法院提起诉讼。</p>
+                        <h4>第玖条 最终解释权</h4>
+                        <p>本软件开发者保留对本免责声明的最终解释权。</p>
+                        <h4>第拾条 更新与通知</h4>
+                        <p>1. 本免责声明可能会不时更新，更新后的声明将在本软件中公布。</p>
+                        <p>2. 用户继续使用本软件即表示接受更新后的声明内容。</p>
+                        <h4>第拾壹条 音乐下载免责声明</h4>
+                        <p><strong>在使用Any Sound下载功能前，请仔细阅读以下声明：</strong></p>
+                        <p>1. 本软件（Any Sound）本身不存储任何音乐文件，不提供音乐上传服务，亦不主动向用户传播任何音频内容。所有可下载的音乐链接均来源于第三方公开API接口及网络搜索引擎，仅供技术研究与个人学习交流之用。</p>
+                        <p>2. 本软件仅作为便捷的搜索与播放工具，无法验证链接所指向文件的版权归属、合法性及内容完整性。任何通过本软件获取的音乐资源，其版权均归原唱片公司、艺术家或合法权利人所有。我们坚决维护知识产权，呼吁用户尊重创作者劳动成果。</p>
+                        <p>3. 用户下载音乐文件仅限个人试听、学习、研究，严禁用于任何商业用途或公开传播。您应在下载后24小时内删除相关文件，并自觉通过正规渠道购买正版音乐以支持创作者。若因用户违规使用而产生的版权纠纷、法律诉讼或经济赔偿，均由用户本人独立承担全部责任，与本软件开发者无关。</p>
+                        <p>4. 本软件反对任何形式的盗版和侵权行为。若您认为本软件无意中侵犯了您的合法权益，请通过适当渠道联系我们，我们将积极配合处理。同时，本软件保留根据法律法规及政策要求随时调整或终止下载服务的权利，且无需另行通知。</p>
+                        <p>5. 由于网络环境的复杂性和不确定性，本软件无法保证下载链接的长期有效、下载速度及文件质量。因第三方服务器变动、API失效或网络波动导致的下载失败、文件损坏等问题，本软件不承担责任。</p>
+                        <p>6. 继续使用下载功能即表示您已充分理解并自愿接受本免责声明的全部条款。若您不同意上述任一内容，请立即关闭本窗口并停止下载。本声明的最终解释权归Any Sound开发团队所有。</p>
+                        <p style="text-align:center;margin-top:30px;"><strong>再次提醒：支持正版音乐，尊重创作者劳动成果！</strong></p>
+                        <p style="font-size:12px;color:var(--text-secondary);text-align:center;margin-top:20px;">最后更新时间：2026年5月23日 10:09:10<br>Any Sound开发团队</p>
+                    </div>
+                    <div class="terms-agreement">
+                        <label class="custom-checkbox"><input type="checkbox" id="modalTermsAgreement"><span class="checkmark-box"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>我已阅读并同意上述《Any Sound使用条款》</label>
+                    </div>
+                    <button class="btn" id="closeTermsBtn" style="margin-top:20px;">我已阅读并理解</button>
+                </div>
+            </div>
+
+            <!-- 账号设置 -->
+            <div class="modal" id="accountSettingsModal">
+                <div class="modal-content account-settings-modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">账号设置</h2>
+                        <button class="close-btn" id="closeAccountSettingsModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="account-info" id="accountInfo"></div>
+                    <div class="form-group"><label class="form-label" for="updateUsername">用户名</label><input type="text" id="updateUsername" class="form-input" placeholder="请输入新用户名" autocomplete="username"></div>
+                    <div class="form-group"><label class="form-label" for="updateEmail">邮箱</label><input type="email" id="updateEmail" class="form-input" placeholder="请输入新邮箱" autocomplete="email"></div>
+                    <div class="form-group"><label class="form-label" for="currentPassword">当前密码</label><input type="password" id="currentPassword" class="form-input" placeholder="请输入当前密码" autocomplete="current-password"></div>
+                    <div class="form-group"><label class="form-label" for="newPassword">新密码</label><input type="password" id="newPassword" class="form-input" placeholder="请输入新密码（留空则不修改）" autocomplete="new-password"></div>
+                    <div class="form-group"><label class="form-label" for="confirmNewPassword">确认新密码</label><input type="password" id="confirmNewPassword" class="form-input" placeholder="请再次输入新密码" autocomplete="new-password"></div>
+                    <div class="form-group"><label class="form-label">数据管理</label><div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn" id="exportAccountDataBtn" style="flex:1;background:var(--accent2);white-space:nowrap;"><i class="fas fa-download"></i><span>导出账号数据</span></button><button class="btn" id="importAccountDataBtn" style="flex:1;background:var(--primary);white-space:nowrap;"><i class="fas fa-upload"></i><span>导入账号数据</span></button></div></div>
+                    <div class="form-group"><label class="form-label">危险操作</label><button class="btn" id="deleteAccountBtn" style="background:var(--error);"><i class="fas fa-trash-alt"></i><span>删除账号</span></button></div>
+                    <div class="error-message" id="accountError" style="margin-top:20px;"><i class="fas fa-exclamation-circle"></i><span id="accountErrorText">发生错误，请稍后再试</span></div>
+                    <button class="btn" id="updateAccountBtn" style="margin-top:20px;">更新账号信息</button>
+                </div>
+            </div>
+
+            <!-- APP下载 -->
+            <div class="modal" id="downloadAppModal">
+                <div class="modal-content download-app-modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">下载APP版</h2>
+                        <button class="close-btn" id="closeDownloadAppModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="download-loading">
+                        <div class="win-spinner win-spinner-md"><div class="win-spinner-wrapper"><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div><div class="win-spinner-item"><div class="win-spinner-ball"></div></div></div></div>
+                        <h3>正在跳转到下载页面</h3>
+                        <p>请稍候，正在为您跳转最新版本的Any Sound APP...</p>
+                        <div class="download-progress"><div class="download-progress-bar" id="downloadProgressBar"></div></div>
+                        <div class="download-timer" id="downloadTimer">3秒后自动跳转</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 关于我们 -->
+            <div class="modal" id="aboutModal">
+                <div class="modal-content about-modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">关于 Any Sound</h2>
+                        <button class="close-btn" id="closeAboutModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="about-modal-body">
+                        <div class="about-logo">
+                            <img src="/anysound_icon_new.png" alt="Any Sound">
+                        </div>
+                        <h3 class="about-app-name">Any Sound</h3>
+                        <p class="about-version" id="aboutVersion">免费音乐播放器 v26.24.5</p>
+                        <div class="about-check-update">
+                            <button class="btn btn-primary" id="checkUpdateBtn" style="width:auto;padding:8px 20px;border-radius:12px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px;">
+                                <i class="fas fa-sync-alt"></i> 检查更新
+                            </button>
+                        </div>
+                        <div class="about-section">
+                            <h4 class="about-section-title">功能介绍</h4>
+                            <p class="about-section-text">
+                                1. 搜索和播放海量音乐<br>
+                                2. 多音质选择（标准到母带）<br>
+                                3. 收藏喜欢的歌曲<br>
+                                4. 本地播放历史记录<br>
+                                5. 暗色/明亮主题切换<br>
+                                6. 响应式设计，适配各种设备<br>
+                                7. 用户账号系统<br>
+                                8. 数据导出功能
+                            </p>
+                        </div>
+                        <div class="about-section">
+                            <h4 class="about-section-title">使用说明</h4>
+                            <p class="about-section-text">
+                                1. 在搜索框中输入关键词搜索歌曲<br>
+                                2. 点击歌曲卡片上的播放按钮开始播放<br>
+                                3. 点击心形图标收藏喜欢的歌曲<br>
+                                4. 在"我的收藏"中管理收藏的歌曲<br>
+                                5. 在"设置"中调整播放偏好和界面主题<br>
+                                6. 注册账号可以保存个人数据（个人数据和账号不会上传到云端，请自行备份）
+                            </p>
+                        </div>
+                        <div class="about-terms-link-wrap">
+                            <a href="#" id="aboutTermsLink">《使用条款＆免责声明》</a>
+                            <p class="about-terms-hint">点击查看完整使用条款与免责声明</p>
+                        </div>
+                        <div class="about-copyright">
+                            <p>© 2026 Any Sound. 所有音乐资源来源于网络公开API。<br>请支持正版音乐，尊重音乐创作者的劳动成果。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户菜单 -->
+            <div class="user-menu" id="userMenu">
+                <div class="user-menu-item" id="userProfileItem"><i class="fas fa-user"></i><span id="userMenuName">用户名</span></div>
+                <div class="user-menu-divider"></div>
+                <div class="user-menu-item" id="userSettingsItem"><i class="fas fa-cog"></i><span>账号设置</span></div>
+                <div class="user-menu-divider"></div>
+                <div class="user-menu-item" id="logoutItem"><i class="fas fa-sign-out-alt"></i><span>退出登录</span></div>
+            </div>
+
+            <!-- 通知 -->
+            <div class="notification" id="notification"><i class="fas fa-check-circle"></i><span id="notificationText">操作成功</span></div>
+            <div class="toast-container" id="toastContainer"></div>
+
+            <!-- 全屏播放器 -->
+            <div class="fullscreen-player" id="fullscreenPlayer">
+                <div class="fullscreen-dynamic-bg" id="fullscreenDynamicBg"></div>
+                <button class="fullscreen-close" id="fullscreenClose"><i class="fas fa-times"></i></button>
+                <button class="fullscreen-f11" id="fullscreenF11" title="浏览器全屏 (F11)"><i class="fas fa-expand"></i></button>
+                <div class="fullscreen-flex-container">
+                    <div class="fullscreen-info-panel">
+                        <div class="fullscreen-cover" id="fullscreenCover"><i class="fas fa-music"></i></div>
+                        <div class="fullscreen-info">
+                            <h2 class="fullscreen-title" id="fullscreenTitle">未选择歌曲</h2>
+                            <p class="fullscreen-artist" id="fullscreenArtist">-</p>
+                        </div>
+                        <div class="fullscreen-progress-container">
+                            <div class="fullscreen-progress-bar" id="fullscreenProgressBar"><div class="fullscreen-progress" id="fullscreenProgress"></div></div>
+                            <div class="fullscreen-time-display"><span id="fullscreenCurrentTime">0:00</span><span id="fullscreenDuration">0:00</span></div>
+                        </div>
+                        <div class="fullscreen-controls-panel">
+                            <div class="fullscreen-controls-left">
+                                <button class="fullscreen-ctrl-icon" id="fullscreenPrevBtn"><i class="fas fa-step-backward"></i></button>
+                                <button class="fullscreen-ctrl-icon fullscreen-play-icon" id="fullscreenPlayBtn"><i class="fas fa-play" id="fullscreenPlayIcon"></i></button>
+                                <button class="fullscreen-ctrl-icon" id="fullscreenNextBtn"><i class="fas fa-step-forward"></i></button>
+                            </div>
+                            <div class="fullscreen-controls-right">
+                                <button class="fullscreen-ctrl-icon" id="fullscreenModeBtn"><i class="fas fa-repeat"></i></button>
+                                <button class="fullscreen-ctrl-icon" id="fullscreenSettingsBtn"><i class="fas fa-cog"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fullscreen-lyrics-panel">
+                        <div class="lyrics-container" id="lyricsContainer"><div class="no-lyrics"><i class="fas fa-microphone-alt"></i><p>歌词载入中...</p></div></div>
+                        <button class="mobile-back-btn" id="mobileLyricsBackBtn"><i class="fas fa-arrow-left"></i></button>
+                    </div>
+                </div>
+                <button class="lyrics-toggle-btn" id="lyricsToggleBtn" style="display:none;"><i class="fas fa-microphone-alt"></i><span>显示歌词</span></button>
+            </div>
+
+            <!-- 快捷设置 -->
+            <div class="modal" id="fullscreenSettingsModal">
+                <div class="modal-content" style="max-width:480px;">
+                    <div class="modal-header">
+                        <h2 class="modal-title">快捷设置</h2>
+                        <button class="close-btn" id="closeFullscreenSettingsModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="settings-grid" id="fullscreenSettingsGrid"></div>
+                    <div style="margin-top:24px;text-align:right;"><button class="btn" id="fullscreenSettingsCloseBtn">完成</button></div>
+                </div>
+            </div>
+
+            <audio id="audioPlayer" preload="metadata"></audio>
+            <audio id="crossfadePlayer" preload="metadata"></audio>
+            <input type="file" id="importAccountDataFile" style="display:none;">
+            <input type="file" id="importFavoritesFile" style="display:none;">
+            <input type="file" id="importHistoryFile" style="display:none;">
+
+            <div class="page-content" id="pagePlaylists">
+                <div class="playlists-header">
+                    <h2>我的播放列表</h2>
+                    <button class="btn" id="createPlaylistBtn"><i class="fas fa-plus"></i> 新建歌单</button>
+                    <button class="btn" id="editPlaylistsBtn"><i class="fas fa-sort"></i> 编辑排序</button>
+                </div>
+                <div class="playlists-grid" id="playlistsGrid">
+                    <div class="empty-state"><i class="fas fa-list"></i><p>还没有播放列表</p><p style="font-size:12px;color:var(--text-secondary);">点击上方按钮创建第一个歌单</p></div>
+                </div>
+            </div>
+
+            <div class="page-content" id="pagePlaylistDetail">
+                <div class="playlist-detail-header">
+                    <button class="btn" id="backToPlaylistsBtn"><i class="fas fa-arrow-left"></i> 返回</button>
+                    <div class="playlist-detail-info">
+                        <h2 id="playlistDetailName">歌单名称</h2>
+                        <span id="playlistDetailCount">0 首歌曲</span>
+                    </div>
+                    <div class="playlist-detail-actions">
+    <button class="btn batch-mode-btn" id="playlistBatchBtn"><i class="fas fa-check-square"></i> 批量操作</button>
+    <button class="btn" id="editPlaylistSongsBtn"><i class="fas fa-sort"></i> 编辑排序</button>
+    <button class="btn" id="renamePlaylistBtn"><i class="fas fa-edit"></i> 重命名</button>
+    <button class="btn" id="deletePlaylistBtn"><i class="fas fa-trash"></i> 删除歌单</button>
+</div>
+                </div>
+                <div class="playlist-detail-list" id="playlistDetailList">
+                    <div class="empty-state"><i class="fas fa-music"></i><p>歌单中还没有歌曲</p></div>
+                </div>
+            </div>
+
+            <div class="modal" id="playlistModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="playlistModalTitle">新建歌单</h2>
+                        <button class="close-btn" id="closePlaylistModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="form-group"><label class="form-label" for="playlistNameInput">歌单名称</label><input type="text" id="playlistNameInput" class="form-input" placeholder="请输入歌单名称"></div>
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                        <button class="btn" id="cancelPlaylistBtn" style="background:transparent;border:1px solid var(--glass-border);">取消</button>
+                        <button class="btn" id="confirmPlaylistBtn">确认</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal" id="addToPlaylistModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">添加到歌单</h2>
+                        <button class="close-btn" id="closeAddToPlaylistModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="playlist-select-list" id="playlistSelectList">
+                        <div class="empty-state"><i class="fas fa-list"></i><p>还没有播放列表</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 睡眠定时器指示器 -->
+            <div class="sleep-timer-indicator" id="sleepTimerIndicator" style="display:none;">
+                <i class="fas fa-moon"></i>
+                <span id="sleepTimerRemaining">00:00</span>
+                <button class="sleep-timer-cancel" id="cancelSleepTimer" title="取消定时"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- 播放队列面板 -->
+            <div class="queue-panel" id="queuePanel">
+                <div class="queue-panel-header">
+                    <h3>播放队列（<span id="queueCount">0</span>）</h3>
+                    <button class="queue-panel-close" id="closeQueuePanel"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="queue-panel-list" id="queuePanelList">
+                    <div class="empty-state"><i class="fas fa-list-ul"></i><p>队列为空</p></div>
+                </div>
+                <div class="queue-panel-footer">
+                    <button class="btn" id="clearQueueBtn" style="background:transparent;border:1px solid var(--glass-border);"><i class="fas fa-trash-alt"></i> 清空队列</button>
+                </div>
+            </div>
+            <div class="queue-panel-overlay" id="queuePanelOverlay"></div>
+
+            <!-- 批量操作栏 -->
+            <div class="batch-bar" id="batchBar">
+                <div class="batch-bar-left">
+                    <label class="custom-checkbox"><input type="checkbox" id="batchSelectAll"><span class="checkmark-box"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> 全选</label>
+                    <span class="batch-count" id="batchCount">已选 0 首</span>
+                </div>
+                <div class="batch-bar-right">
+    <button class="btn" id="batchAddToPlaylistBtn"><i class="fas fa-plus"></i> 添加到歌单</button>
+    <button class="btn" id="batchDownloadBtn"><i class="fas fa-download"></i> 批量下载</button>
+    <button class="btn" id="batchRemoveBtn" style="display:none;background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fas fa-trash-alt"></i> 从歌单移除</button>
+    <button class="btn" id="batchCancelBtn" style="background:transparent;border:1px solid var(--glass-border);">取消</button>
+</div>
+            </div>
+
+            <!-- 下载免责 -->
+            <div class="modal" id="disclaimerModal">
+                <div class="modal-content disclaimer-modal">
+                    <div class="modal-header">
+                        <h2 class="modal-title">下载免责声明「持续下滑或滑动内容旁边的区域以显示下载按钮」</h2>
+                        <button class="close-btn" id="closeDisclaimerModal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="disclaimer-content">
+                        <h3>音乐下载免责声明</h3>
+                        <p><strong>在使用Any Sound下载功能前，请仔细阅读以下声明：</strong></p>
+                        <p>1. 本软件（Any Sound）本身不存储任何音乐文件，不提供音乐上传服务，亦不主动向用户传播任何音频内容。所有可下载的音乐链接均来源于第三方公开API接口及网络搜索引擎，仅供技术研究与个人学习交流之用。</p>
+                        <p>2. 本软件仅作为便捷的搜索与播放工具，无法验证链接所指向文件的版权归属、合法性及内容完整性。任何通过本软件获取的音乐资源，其版权均归原唱片公司、艺术家或合法权利人所有。我们坚决维护知识产权，呼吁用户尊重创作者劳动成果。</p>
+                        <p>3. 用户下载音乐文件仅限个人试听、学习、研究，严禁用于任何商业用途或公开传播。您应在下载后24小时内删除相关文件，并自觉通过正规渠道购买正版音乐以支持创作者。若因用户违规使用而产生的版权纠纷、法律诉讼或经济赔偿，均由用户本人独立承担全部责任，与本软件开发者无关。</p>
+                        <p>4. 本软件反对任何形式的盗版和侵权行为。若您认为本软件无意中侵犯了您的合法权益，请通过适当渠道联系我们，我们将积极配合处理。同时，本软件保留根据法律法规及政策要求随时调整或终止下载服务的权利，且无需另行通知。</p>
+                        <p>5. 由于网络环境的复杂性和不确定性，本软件无法保证下载链接的长期有效、下载速度及文件质量。因第三方服务器变动、API失效或网络波动导致的下载失败、文件损坏等问题，本软件不承担责任。</p>
+                        <p>6. 继续使用下载功能即表示您已充分理解并自愿接受本免责声明的全部条款。若您不同意上述任一内容，请立即关闭本窗口并停止下载。本声明的最终解释权归Any Sound开发团队所有。</p>
+                        <p style="text-align:center;margin-top:20px;"><strong>再次提醒：音乐有价，创作不易，请支持正版！</strong></p>
+                    </div>
+                    <div class="disclaimer-agreement">
+                        <div class="disclaimer-check-wrapper">
+                            <input type="checkbox" id="disclaimerAgreeCheck" disabled>
+                            <label for="disclaimerAgreeCheck">我已仔细阅读并同意以上免责声明（<span id="disclaimerCountdown">3</span>秒后可勾选）</label>
+                        </div>
+                    </div>
+                    <div class="disclaimer-actions">
+                        <button class="btn" id="confirmDownloadBtn">同意并下载</button>
+                        <button class="btn" id="cancelDisclaimerBtn" style="background:transparent;border:1px solid var(--glass-border);">取消</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function(reg) {
+                    console.log('[SW] 注册成功，scope:', reg.scope);
+                    reg.addEventListener('updatefound', function() {
+                        var newWorker = reg.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', function() {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('[SW] 检测到新版本，即将刷新页面...');
+                                    setTimeout(function() { window.location.reload(); }, 500);
+                                }
+                            });
+                        }
+                    });
+                }).catch(function(err) {
+                    console.log('[SW] 注册失败:', err);
+                });
+            });
+        }
+    </script>
+    <script src="js/liquid-glass.js?v=26.24.5"></script>
+    <script src="js/script.js?v=26.24.5"></script>
+</body>
+</html>

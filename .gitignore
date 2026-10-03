@@ -1,0 +1,15 @@
+# APK 安装包（体积太大）
+*.apk
+
+# 系统文件
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+
+# 临时文件
+*.tmp
+*.log

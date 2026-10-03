@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no">
+  <title>下载 - Anysound - Download for Anysound App</title>
+  <meta name="description" content="下载 anysound_26.19.6 beta 8 安卓版，纯净无广，沉浸音乐体验。">
+  <meta name="theme-color" content="#0b0c14">
+  <!-- Google Material Symbols 图标库 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at 30% 10%, #0b0c14 0%, #03040a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+      margin: 0;
+      position: relative;
+      overflow-x: hidden;
+      transition: padding 0.3s ease;
+      line-height: 1.4;
+    }
+
+    /* 动态光晕背景 - 性能优化：减少模糊面积，使用 will-change 提示 */
+    .bg-aurora {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .aurora-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: 0.38;
+      animation: floatBlob 22s infinite alternate ease-in-out;
+      will-change: transform, opacity;
+    }
+
+    .blob1 {
+      width: clamp(280px, 65vw, 750px);
+      height: clamp(280px, 65vw, 750px);
+      background: radial-gradient(circle, #3b2f80 0%, #0e1030 80%);
+      top: -25%;
+      left: -18%;
+      animation-duration: 24s;
+    }
+
+    .blob2 {
+      width: clamp(240px, 55vw, 680px);
+      height: clamp(240px, 55vw, 680px);
+      background: radial-gradient(circle, #1e3a5f 0%, #020213 85%);
+      bottom: -18%;
+      right: -12%;
+      animation-duration: 28s;
+      animation-delay: -3s;
+    }
+
+    .blob3 {
+      width: clamp(180px, 45vw, 580px);
+      height: clamp(180px, 45vw, 580px);
+      background: radial-gradient(circle, #5f2b4a 0%, #14081a 85%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-duration: 26s;
+      animation-delay: -6s;
+      opacity: 0.25;
+    }
+
+    @keyframes floatBlob {
+      0% { transform: translate(0, 0) scale(0.92) rotate(0deg); }
+      33% { transform: translate(3.5vw, -4vh) scale(1.08) rotate(3deg); }
+      66% { transform: translate(-3.5vw, 5vh) scale(0.96) rotate(-2deg); }
+      100% { transform: translate(2.5vw, -2.5vh) scale(1.04) rotate(1deg); }
+    }
+
+    /* 主卡片 - 增加细微内阴影，提升质感 */
+    .glass-card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 620px;
+      background: rgba(14, 16, 26, 0.45);
+      backdrop-filter: blur(32px) saturate(190%);
+      -webkit-backdrop-filter: blur(32px) saturate(190%);
+      border-radius: clamp(2.2rem, 7vw, 3.8rem);
+      padding: clamp(2rem, 7vw, 3rem) clamp(1.4rem, 6vw, 2.8rem);
+      box-shadow: 
+        0 35px 70px rgba(0, 0, 0, 0.75), 
+        0 0 0 1px rgba(255, 255, 255, 0.07), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 -2px 10px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      color: #fff;
+      transition: transform 0.3s ease, box-shadow 0.4s ease;
+      animation: cardEntry 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      opacity: 0;
+      transform: translateY(35px);
+      margin: 0 auto;
+      will-change: transform, opacity;
+    }
+
+    @keyframes cardEntry {
+      0% { opacity: 0; transform: translateY(45px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 图标容器 */
+    .icon-container {
+      position: relative;
+      margin-bottom: clamp(1.2rem, 5vw, 2.2rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-icon-wrapper {
+      width: clamp(85px, 20vw, 120px);
+      height: clamp(85px, 20vw, 120px);
+      border-radius: 30px;
+      background: linear-gradient(135deg, #6d5dfc, #b04afc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 40px rgba(109, 93, 252, 0.55), 0 0 0 2px rgba(255, 255, 255, 0.18);
+      position: relative;
+      z-index: 2;
+      animation: softPulse 3s infinite ease-in-out;
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+
+    .app-icon-img {
+      width: 72%;
+      height: 72%;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.5));
+      border-radius: 20px;
+      transition: transform 0.3s ease;
+    }
+    
+    .image-icon-wrapper:hover .app-icon-img {
+      transform: scale(1.02);
+    }
+
+    @keyframes softPulse {
+      0% { transform: scale(1); box-shadow: 0 20px 40px rgba(109, 93, 252, 0.55); }
+      50% { transform: scale(1.05); box-shadow: 0 25px 50px rgba(150, 100, 255, 0.8); }
+      100% { transform: scale(1); box-shadow: 0 20px 40px rgba(109, 93, 252, 0.55); }
+    }
+
+    .ripple-ring {
+      position: absolute;
+      width: clamp(85px, 20vw, 120px);
+      height: clamp(85px, 20vw, 120px);
+      border-radius: 30px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      animation: rippleExpand 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .ripple-ring:nth-child(2) { animation-delay: 0.6s; }
+    .ripple-ring:nth-child(3) { animation-delay: 1.2s; }
+
+    @keyframes rippleExpand {
+      0% { transform: scale(0.85); opacity: 0.8; border-width: 2px; }
+      100% { transform: scale(1.8); opacity: 0; border-width: 1px; }
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 9vw, 4rem);
+      font-weight: 650;
+      background: linear-gradient(135deg, #ffffff 0%, #d9ccff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.15rem;
+      letter-spacing: -0.5px;
+    }
+
+    .version-badge {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      padding: 0.35rem 1.4rem;
+      border-radius: 3rem;
+      font-size: clamp(0.85rem, 2.8vw, 1rem);
+      color: #c7bef0;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      margin-bottom: clamp(1.3rem, 4vw, 2.2rem);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-weight: 500;
+    }
+
+    .download-message {
+      font-size: clamp(0.95rem, 3.2vw, 1.3rem);
+      margin: 0.6rem 0 0.4rem;
+      color: rgba(255, 255, 255, 0.88);
+      font-weight: 450;
+    }
+
+    .file-name-highlight {
+      background: rgba(255,255,255,0.12);
+      padding: 0.25rem 1rem;
+      border-radius: 2rem;
+      font-weight: 650;
+      color: #ede4ff;
+      word-break: break-word;
+    }
+
+    .loading-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.72);
+      margin: 0.1rem 0 0.9rem;
+      font-size: clamp(0.8rem, 2.6vw, 1rem);
+      font-weight: 400;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 0.9rem;
+      margin: 1.6rem 0 0.7rem;
+    }
+
+    @media (min-width: 580px) {
+      .button-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .btn {
+        flex: 1 1 auto;
+        min-width: 170px;
+      }
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: clamp(0.85rem, 2.8vw, 1.1rem) clamp(1.4rem, 5vw, 2.2rem);
+      border-radius: 2.8rem;
+      font-weight: 620;
+      font-size: clamp(0.95rem, 3.2vw, 1.2rem);
+      text-decoration: none;
+      transition: all 0.25s ease;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: white;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #5f4dfc, #9b3df0);
+      border: none;
+      box-shadow: 0 12px 28px rgba(106, 61, 232, 0.55);
+      animation: glowPulse 2.8s infinite alternate;
+      font-weight: 650;
+    }
+
+    @keyframes glowPulse {
+      0% { box-shadow: 0 12px 28px rgba(106, 61, 232, 0.55); }
+      100% { box-shadow: 0 18px 38px rgba(140, 75, 255, 0.85); }
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 38px rgba(125, 70, 245, 0.9);
+      background: linear-gradient(135deg, #6b5afc, #a34af0);
+    }
+
+    .btn-outline {
+      background: rgba(18, 20, 34, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(18px);
+    }
+
+    .btn-outline:hover {
+      background: rgba(35, 38, 55, 0.7);
+      border-color: rgba(255, 255, 255, 0.42);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+      transition: 0.1s;
+    }
+
+    .noscript-warning {
+      background: rgba(220, 53, 69, 0.18);
+      border: 1px solid rgba(255, 90, 90, 0.55);
+      color: #ffc2c2;
+      padding: 0.8rem 1.4rem;
+      border-radius: 2.5rem;
+      margin-top: 1.3rem;
+      font-size: 0.9rem;
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.25);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-note {
+      font-size: clamp(0.7rem, 2.2vw, 0.9rem);
+      margin-top: 1.3rem;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 0.3px;
+    }
+
+    /* ===== 模态窗口优化 ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      animation: fadeIn 0.22s ease;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-dialog {
+      background: rgba(20, 22, 36, 0.85);
+      backdrop-filter: blur(38px) saturate(210%);
+      -webkit-backdrop-filter: blur(38px) saturate(210%);
+      border-radius: 2.8rem;
+      max-width: 480px;
+      width: 100%;
+      padding: 2.2rem 1.9rem;
+      box-shadow: 0 45px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: white;
+      transform: scale(0.94);
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .active .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 650;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ede6ff;
+    }
+
+    .close-modal {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 22px;
+      transition: all 0.2s;
+      backdrop-filter: blur(8px);
+    }
+
+    .close-modal:hover {
+      background: rgba(255,255,255,0.25);
+      transform: rotate(90deg);
+    }
+
+    .address-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .address-option {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 2rem;
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.25s;
+      text-decoration: none;
+      color: white;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .address-option:hover {
+      background: rgba(255,255,255,0.14);
+      border-color: rgba(255,255,255,0.28);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+    }
+
+    .address-info {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .address-label {
+      font-weight: 650;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .recommend-badge {
+      background: #9b3df0;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.7rem;
+      border-radius: 1.2rem;
+      margin-left: 0.4rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .address-url {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.52);
+      margin-top: 0.25rem;
+      word-break: break-all;
+    }
+
+    .arrow-icon {
+      color: rgba(255,255,255,0.65);
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 480px) {
+      .modal-dialog {
+        padding: 1.9rem 1.3rem;
+      }
+      .address-option {
+        padding: 1rem 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-aurora" aria-hidden="true">
+    <div class="aurora-blob blob1"></div>
+    <div class="aurora-blob blob2"></div>
+    <div class="aurora-blob blob3"></div>
+  </div>
+
+  <main class="glass-card">
+    <div class="icon-container">
+      <div class="ripple-ring" aria-hidden="true"></div>
+      <div class="ripple-ring" aria-hidden="true"></div>
+      <div class="ripple-ring" aria-hidden="true"></div>
+      <div class="image-icon-wrapper">
+        <img src="/anysound_icon_new.png" alt="Anysound 应用图标" class="app-icon-img" loading="eager" width="80" height="80">
+      </div>
+    </div>
+
+    <h1>Anysound</h1>
+    <div class="version-badge">
+      <span class="material-symbols-rounded" style="font-size: 18px;" aria-hidden="true">bolt</span> anysound_26.19.6 beta 8
+    </div>
+
+    <p class="download-message">
+      正在尝试自动下载 <span class="file-name-highlight">Anysound_beta 8</span>
+    </p>
+    
+    <div class="loading-indicator" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span> 稍等片刻…
+    </div>
+
+    <div class="button-group">
+      <a href="/anysound_26.19.6 beta 8.apk" download="anysound_26.19.6 beta 8.apk" class="btn btn-primary">
+        <span class="material-symbols-rounded" aria-hidden="true">download</span> 立即下载 APK
+      </a>
+      
+      <!-- 备用地址按钮：打开模态窗口 -->
+      <button id="showModalBtn" class="btn btn-outline" type="button">
+        <span class="material-symbols-rounded" aria-hidden="true">cloud</span> 备用地址
+      </button>
+    </div>
+
+    <noscript>
+      <div class="noscript-warning">
+        <span class="material-symbols-rounded" style="font-size: 18px; vertical-align: middle;" aria-hidden="true">warning</span>
+        未启用 JavaScript，请手动选择备用地址。
+      </div>
+    </noscript>
+    <div class="footer-note">
+      沉浸式音乐体验 · 纯净无广
+    </div>
+  </main>
+
+  <!-- 备用地址选择模态窗口 -->
+  <div class="modal-overlay" id="addressModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">
+          <span class="material-symbols-rounded" aria-hidden="true">cloud_download</span> 选择备用地址
+        </div>
+        <button class="close-modal" id="closeModalBtn" aria-label="关闭对话框">
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <div class="address-list">
+        <!-- 地址一（推荐） -->
+        <a href="https://wwwa.qyshare.com:2083/s/anysound" target="_blank" rel="noopener noreferrer" class="address-option">
+          <div class="address-info">
+            <div class="address-label">
+              <span aria-hidden="true">🌐</span> 地址一
+              <span class="recommend-badge">推荐</span>
+            </div>
+            <div class="address-url">qyshare.com (不限速)</div>
+          </div>
+          <span class="material-symbols-rounded arrow-icon" aria-hidden="true">arrow_forward</span>
+        </a>
+        <!-- 地址二 -->
+        <a href="https://www.123684.com/s/0LdDjv-2ECKA" target="_blank" rel="noopener noreferrer" class="address-option">
+          <div class="address-info">
+            <div class="address-label">
+              <span aria-hidden="true">🌐</span> 地址二
+            </div>
+            <div class="address-url">123684.com (备用线路，不限速)</div>
+          </div>
+          <span class="material-symbols-rounded arrow-icon" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // 自动下载逻辑 (优化：增加错误处理与移动端限制)
+      const fileUrl = '/anysound_26.19.6 beta 8.apk';
+      const fileName = 'anysound_26.19.6 beta 8.apk';
+
+      function triggerDownload() {
+        try {
+          const link = document.createElement('a');
+          link.href = fileUrl;
+          link.download = fileName;
+          link.style.display = 'none';
+          link.setAttribute('aria-hidden', 'true');
+          document.body.appendChild(link);
+          link.click();
+          
+          // 清理
+          setTimeout(() => {
+            if (link && link.parentNode) {
+              link.parentNode.removeChild(link);
+            }
+          }, 400);
+        } catch (e) {
+          console.warn('自动下载触发失败，请手动点击下载按钮。', e);
+        }
+      }
+
+      // 页面加载后延迟触发，避免阻塞渲染
+      window.addEventListener('DOMContentLoaded', function() {
+        // 稍微延迟，确保用户感知到页面
+        setTimeout(() => {
+          // 部分移动浏览器可能限制自动下载，仍然尝试
+          triggerDownload();
+        }, 600);
+      });
+
+      // 模态窗口控制 (优化焦点管理)
+      const modal = document.getElementById('addressModal');
+      const showBtn = document.getElementById('showModalBtn');
+      const closeBtn = document.getElementById('closeModalBtn');
+      let lastFocusedElement = null;
+
+      function openModal() {
+        if (!modal) return;
+        lastFocusedElement = document.activeElement;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // 聚焦关闭按钮或第一个链接，提升可访问性
+        if (closeBtn) {
+          closeBtn.focus();
+        }
+      }
+
+      function closeModal() {
+        if (!modal) return;
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        
+        // 恢复焦点到触发按钮
+        if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+          lastFocusedElement.focus();
+        }
+      }
+
+      if (showBtn) {
+        showBtn.addEventListener('click', openModal);
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+      }
+
+      // 点击模态窗口外部区域关闭
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+        
+        // 防止模态框内部点击事件冒泡导致关闭
+        const dialog = modal.querySelector('.modal-dialog');
+        if (dialog) {
+          dialog.addEventListener('click', function(e) {
+            e.stopPropagation();
+          });
+        }
+      }
+
+      // ESC 键关闭
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+          closeModal();
+        }
+      });
+
+      console.log('✨ Anysound 界面已优化 | 自动下载已准备');
+    })();
+  </script>
+</body>
+</html>

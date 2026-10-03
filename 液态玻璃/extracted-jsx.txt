@@ -1,0 +1,8 @@
+=== JSX COMPONENT SNIPPETS ===
+
+
+=== ALL CLASSNAME STRINGS ===
+className:"w-full flex items-center justify-center"
+
+className:"relative overflow-hidden shadow-2xl lg-frame"
+

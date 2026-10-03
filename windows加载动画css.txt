@@ -1,0 +1,95 @@
+@use "sass:map";
+
+body {
+  background-color: #333;
+}
+
+#app {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  .loading {
+    $size: 10px;
+    $xyMaps: (
+      1: (
+        "x": 0px,
+        "y": 50px
+      ),
+      2: (
+        "x": 19px,
+        "y": 44px
+      ),
+      3: (
+        "x": 35.3px,
+        "y": 35.3px
+      ),
+      4: (
+        "x": 44px,
+        "y": 19px
+      ),
+      5: (
+        "x": 50px,
+        "y": 0px
+      )
+    );
+    .wrapper {
+      $offset: -#{$size/2};
+      position: absolute;
+      left: $offset;
+      top: $offset;
+    }
+    
+    @keyframes rotate180 {
+      0% {
+        transform: rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.5;
+      }
+      25% {
+        opacity: 1;
+        transform: rotate(180deg);
+      }
+      50% {
+        transform: rotate(180deg);
+      }
+      70% {
+        opacity: 1;
+      }
+      71% {
+        opacity: 0.5;
+      }
+      73% {
+        opacity: 0;
+      }
+      75% {
+        transform: rotate(360deg);
+      }
+      100% {
+        transform: rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @for $i from 1 through 5 {
+      .item:nth-child(#{$i}) {
+        $item: map.get($xyMaps, $i);
+        $offsetX: map.get($item, "x");
+        $offsetY: map.get($item, "y");
+        position: absolute;
+        left: $offsetX;
+        top: $offsetY;
+        .ball {
+          opacity: 0;
+          border: $size/2 solid #fff;
+          border-radius: 50%;
+          background-color: #fff;
+          transform-origin: -#{$offsetX} -#{$offsetY};
+          animation: rotate180 2.5s #{($i - 1) * 0.05}s ease infinite;
+        }
+      }
+    }
+  }
+}

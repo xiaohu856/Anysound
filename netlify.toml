@@ -1,0 +1,13 @@
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/kuwo/*"
+  to = "http://kuwo.bfmzdx.cn/kuwo/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/download-proxy"
+  to = "/.netlify/functions/download-proxy"
+  status = 200
