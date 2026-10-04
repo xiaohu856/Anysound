@@ -167,8 +167,8 @@ var searchHistory = [];
 var SEARCH_HISTORY_KEY = 'anyListen_searchHistory';
 
 var announcementShownThisSession = false;
-var APP_VERSION = '26.24.5';
-var ANNOUNCEMENT_CONTENT = 'Anysound更新公告\n\n已在26年8月28日完成26.24.5版本更新\n更新内容：\n1. 修复 App 内置浏览器无法播放歌曲和加载封面的问题\nv26.24.5\n\n注：如果网易云不可用，请切换为酷我平台！\n响应速度:\n网易云:慢\n酷我/酷狗:快';
+var APP_VERSION = '26.24.6';
+var ANNOUNCEMENT_CONTENT = 'Anysound更新公告\n\n已在26年10月4日完成26.24.6版本更新\n更新内容：\n1. 移动端返回键支持网页内导航（不再直接关闭浏览器）\n2. 优化歌曲卡片高亮逻辑：通过歌曲ID精确匹配\n3. 修复移动端侧边栏展开时播放栏遮盖问题\nv26.24.6\n\n注：如果网易云不可用，请切换为酷我平台！\n响应速度:\n网易云:慢\n酷我/酷狗:快';
 
 // DOM 元素引用
 var sidebar = document.getElementById('sidebar');
@@ -1201,7 +1201,7 @@ function init() {
         switchPage(page);
         _isPoppingState = false;
     });
-    console.log('Any Sound 初始化完成 v26.24.5');
+    console.log('Any Sound 初始化完成 v26.24.6');
     setTimeout(function() { hidePageLoader(); }, 10000);
 }
 
@@ -1657,7 +1657,7 @@ function bindEvents() {
         saveCurrentPagePosition();
         if (settings.dataBackup && isLoggedIn) {
             localStorage.setItem('anyListenAutoBackup', JSON.stringify({
-                version: '26.24.5',
+                version: '26.24.6',
                 backupDate: new Date().toISOString(),
                 account: currentUser ? currentUser.username : '未知用户',
                 favorites: favorites,
@@ -2212,7 +2212,7 @@ function handleUpdateAccount() {
 }
 function exportAccountData() {
     if (!isLoggedIn) { showNotification('请先登录', 'warning'); return; }
-    var accountData = { version: '26.24.5', exportDate: new Date().toISOString(), user: { username: currentUser.username, email: currentUser.email, createdAt: currentUser.createdAt, lastLogin: currentUser.lastLogin }, favorites: favorites, playHistory: playHistory, playlists: playlists, settings: settings, dataInfo: { favoritesCount: favorites.length, historyCount: playHistory.length, playlistsCount: playlists.length } };
+    var accountData = { version: '26.24.6', exportDate: new Date().toISOString(), user: { username: currentUser.username, email: currentUser.email, createdAt: currentUser.createdAt, lastLogin: currentUser.lastLogin }, favorites: favorites, playHistory: playHistory, playlists: playlists, settings: settings, dataInfo: { favoritesCount: favorites.length, historyCount: playHistory.length, playlistsCount: playlists.length } };
     var dataStr = JSON.stringify(accountData, null, 2);
     var blob = new Blob([dataStr], {type: 'application/json'});
     var url = URL.createObjectURL(blob);
@@ -2232,7 +2232,7 @@ function handleImportAccountData(event) {
         try {
             var imported = JSON.parse(e.target.result);
             if (!imported.user || !imported.favorites || !imported.playHistory) { showNotification('导入失败：数据格式不正确', 'error'); return; }
-            if (imported.version !== '26.24.5' && !confirm('导入的数据版本为 ' + (imported.version || '未知') + '，当前版本为 26.24.5，继续导入可能不兼容，是否继续？')) return;
+            if (imported.version !== '26.24.6' && !confirm('导入的数据版本为 ' + (imported.version || '未知') + '，当前版本为 26.24.6，继续导入可能不兼容，是否继续？')) return;
             if (confirm('确定要导入以下数据吗？\n收藏歌曲：' + imported.favorites.length + ' 首\n播放历史：' + imported.playHistory.length + ' 条\n歌单：' + (imported.playlists ? imported.playlists.length : 0) + ' 个\n设置项：' + Object.keys(imported.settings || {}).length + ' 个')) {
                 favorites = imported.favorites || [];
                 playHistory = imported.playHistory || [];
@@ -2827,7 +2827,7 @@ function updateDevOptionsPage() {
     });
     document.getElementById('exportSettingsBtn').addEventListener('click', function() {
         var exportData = {
-            version: '26.24.5',
+            version: '26.24.6',
             exportTime: new Date().toISOString(),
             settings: settings,
             playlists: playlists,
@@ -3180,7 +3180,7 @@ function clearBackupHandle() {
 
 function buildBackupData() {
     return JSON.stringify({
-        version: '26.24.5',
+        version: '26.24.6',
         backupDate: new Date().toISOString(),
         account: isLoggedIn ? (currentUser ? currentUser.username : '未知用户') : '未登录',
         favorites: favorites,
@@ -3768,7 +3768,7 @@ function clearFavorites() {
 }
 function exportFavorites() {
     if (favorites.length === 0) { showToast('收藏列表为空，无法导出', 'warning'); return; }
-    var data = { version: '26.24.5', exportDate: new Date().toISOString(), favorites: favorites, totalCount: favorites.length };
+    var data = { version: '26.24.6', exportDate: new Date().toISOString(), favorites: favorites, totalCount: favorites.length };
     var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a'); a.href = url; a.download = 'anylisten_favorites_' + new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -3782,7 +3782,7 @@ function handleImportFavorites(event) {
         try {
             var imported = JSON.parse(e.target.result);
             if (!imported.favorites || !Array.isArray(imported.favorites)) { showToast('导入失败：数据格式不正确', 'error'); return; }
-            if (imported.version && imported.version !== '26.24.5' && !confirm('导入的数据版本为 ' + imported.version + '，当前版本为 26.24.5，继续导入可能不兼容，是否继续？')) return;
+            if (imported.version && imported.version !== '26.24.6' && !confirm('导入的数据版本为 ' + imported.version + '，当前版本为 26.24.6，继续导入可能不兼容，是否继续？')) return;
             if (confirm('确定要导入 ' + imported.favorites.length + ' 首收藏歌曲吗？\n这将添加到现有收藏列表的末尾。')) {
                 imported.favorites.forEach(function(song) { if (!favorites.some(function(f) { return String(f.id) === String(song.id); })) favorites.push(song); });
                 saveFavorites();
@@ -3841,7 +3841,7 @@ function clearHistory() {
 }
 function exportHistory() {
     if (playHistory.length === 0) { showToast('播放历史为空，无法导出', 'warning'); return; }
-    var data = { version: '26.24.5', exportDate: new Date().toISOString(), history: playHistory, totalCount: playHistory.length };
+    var data = { version: '26.24.6', exportDate: new Date().toISOString(), history: playHistory, totalCount: playHistory.length };
     var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a'); a.href = url; a.download = 'anylisten_history_' + new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -3855,7 +3855,7 @@ function handleImportHistory(event) {
         try {
             var imported = JSON.parse(e.target.result);
             if (!imported.history || !Array.isArray(imported.history)) { showToast('导入失败：数据格式不正确', 'error'); return; }
-            if (imported.version && imported.version !== '26.24.5' && !confirm('导入的数据版本为 ' + imported.version + '，当前版本为 26.24.5，继续导入可能不兼容，是否继续？')) return;
+            if (imported.version && imported.version !== '26.24.6' && !confirm('导入的数据版本为 ' + imported.version + '，当前版本为 26.24.6，继续导入可能不兼容，是否继续？')) return;
             if (confirm('确定要导入 ' + imported.history.length + ' 条播放历史吗？\n这将添加到现有历史记录的末尾。')) {
                 imported.history.forEach(function(record) { if (!playHistory.some(function(h) { return String(h.song.id) === String(record.song.id); })) playHistory.push(record); });
                 if (playHistory.length > settings.historyLimit) playHistory = playHistory.slice(0, settings.historyLimit);

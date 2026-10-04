@@ -1,4 +1,4 @@
-var CACHE_NAME = 'anysound-v26.24.5';
+var CACHE_NAME = 'anysound-v26.24.6';
 var STATIC_ASSETS = [
     '/',
     'index.html',
