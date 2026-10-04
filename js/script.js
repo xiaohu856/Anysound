@@ -57,6 +57,10 @@ var playlistSelectList = document.getElementById('playlistSelectList');
 var sleepTimerIndicator = document.getElementById('sleepTimerIndicator');
 var sleepTimerRemaining = document.getElementById('sleepTimerRemaining');
 var currentPage = 'home';
+var _navStack = [];
+var _isPoppingState = false;
+var _activeSongCardEl = null;
+var _activeSongId = null;
 var currentPlatform = 'all';
 
 var lyricsData = [];
@@ -119,7 +123,9 @@ var settings = {
     floatingLyricsY: 0,
     floatingLyricsPanelExpanded: false,
     autoSwitchOnNeteaseError: true,
-    coverTransition: 'flip3d'
+    coverTransition: 'flip3d',
+    mobileAndroidStyle: true,
+    uiMode: 'simple'
 };
 
 var lastPlaybackState = {
@@ -631,17 +637,19 @@ async function playSongWithOptions(song, index, options) {
     } else {
         if (currentPlatform !== 'all') updatePlatformButtons('netease');
     }
-    document.querySelectorAll('.song-card').forEach(function(card) {
-        card.classList.remove('active');
-        var indicator = card.querySelector('.song-playing-indicator');
-        if (indicator) indicator.remove();
-    });
-    var currentCard = document.querySelector('.song-card[data-id="' + song.id + '"]');
-    if (currentCard) {
-        currentCard.classList.add('active');
-        var cover = currentCard.querySelector('.song-cover');
+    if (_activeSongCardEl && _activeSongCardEl.isConnected) {
+        _activeSongCardEl.classList.remove('active');
+        var oldIndicator = _activeSongCardEl.querySelector('.song-playing-indicator');
+        if (oldIndicator) oldIndicator.remove();
+    }
+    var targetCard = document.querySelector('.song-card[data-id="' + song.id + '"]');
+    if (targetCard) {
+        targetCard.classList.add('active');
+        _activeSongCardEl = targetCard;
+        _activeSongId = song.id;
+        var cover = targetCard.querySelector('.song-cover');
         if (cover && !cover.querySelector('.song-playing-indicator')) {
-            cover.innerHTML += '<div class="song-playing-indicator"><i class="fas fa-play"></i></div>';
+            cover.insertAdjacentHTML('beforeend', '<div class="song-playing-indicator"><i class="fas fa-play"></i></div>');
         }
     }
     try {
@@ -1132,9 +1140,14 @@ function init() {
     settingsCloseBtn.addEventListener('click', function() { settingsModal.classList.remove('active'); });
     settingsNavBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        settingsModal.classList.add('active');
-        updateSettingsPage();
-        checkDevMode();
+        var isAndroidMobile = document.body.classList.contains('mobile-android-style');
+        if (isAndroidMobile) {
+            switchPage('settings');
+        } else {
+            settingsModal.classList.add('active');
+            updateSettingsPage();
+            checkDevMode();
+        }
         closeMobileSidebar();
     });
 
@@ -1145,6 +1158,10 @@ function init() {
     if (editPlaylistsBtn) editPlaylistsBtn.addEventListener('click', togglePlaylistEditMode);
     var backToPlaylistsBtn = document.getElementById('backToPlaylistsBtn');
     if (backToPlaylistsBtn) backToPlaylistsBtn.addEventListener('click', function() { currentPlaylistId = null; switchPage('playlists'); });
+    var backFromSettingsBtn = document.getElementById('backFromSettingsBtn');
+    if (backFromSettingsBtn) backFromSettingsBtn.addEventListener('click', function() {
+        switchPage('home');
+    });
     var renamePlaylistBtn = document.getElementById('renamePlaylistBtn');
     if (renamePlaylistBtn) renamePlaylistBtn.addEventListener('click', function() { showPlaylistModal('rename', currentPlaylistId); });
     var deletePlaylistBtn = document.getElementById('deletePlaylistBtn');
@@ -1177,6 +1194,13 @@ function init() {
         searchInput.addEventListener('blur', function() { setTimeout(hideMobileSearchHistory, 300); });
     }
     if (refreshHistoryBtn) refreshHistoryBtn.addEventListener('click', function() { updateHistoryPage(); showToast('历史已刷新', 'success'); });
+    history.replaceState({ page: 'home' }, '', window.location.href);
+    window.addEventListener('popstate', function(e) {
+        var page = (e.state && e.state.page) ? e.state.page : 'home';
+        _isPoppingState = true;
+        switchPage(page);
+        _isPoppingState = false;
+    });
     console.log('Any Sound 初始化完成 v26.24.5');
     setTimeout(function() { hidePageLoader(); }, 10000);
 }
@@ -2303,6 +2327,8 @@ function loadSettings() {
         if (!settings.fontFamily) settings.fontFamily = 'Inter, system-ui, sans-serif';
         if (settings.fontFamily === "'Comic Sans MS', 'YouYuan', cursive") settings.fontFamily = "'ComicSansLocal', 'YouYuanLocal', 'Comic Sans MS', cursive";
         if (settings.autoSwitchOnNeteaseError === undefined) settings.autoSwitchOnNeteaseError = true;
+        if (settings.mobileAndroidStyle === undefined) settings.mobileAndroidStyle = true;
+        if (!settings.uiMode) settings.uiMode = 'simple';
         applyThemeColor(settings.themeColor);
         applyFontFamily(settings.fontFamily);
     }
@@ -2311,11 +2337,128 @@ function loadSettings() {
     } else {
         document.body.classList.remove('animations-disabled');
     }
+    applyUIMode();
 }
 
 function saveSettings() {
     localStorage.setItem('anyListenSettings', JSON.stringify(settings));
 }
+
+function applyUIMode() {
+    var isMobile = window.innerWidth <= 767;
+
+    if (isMobile && settings.mobileAndroidStyle) {
+        document.body.classList.add('mobile-android-style');
+        createMobileBottomNav();
+        setTimeout(function() {
+            var mn = document.getElementById('mobileBottomNav');
+            if (mn && currentPage) {
+                var inner = mn.querySelector('.mobile-bottom-nav-inner');
+                if (inner) {
+                    inner.querySelectorAll('.mobile-nav-item').forEach(function(it) { it.classList.remove('active'); });
+                    var ni = inner.querySelector('.mobile-nav-item[data-page="' + currentPage + '"]');
+                    if (ni) ni.classList.add('active');
+                }
+            }
+        }, 50);
+    } else {
+        document.body.classList.remove('mobile-android-style');
+        removeMobileBottomNav();
+        if (currentPage === 'settings') {
+            switchPage('home');
+        }
+    }
+
+    if (!isMobile) {
+        if (settings.uiMode === 'simple') {
+            document.body.classList.add('ui-mode-simple');
+            document.body.classList.remove('ui-mode-advanced');
+            document.querySelectorAll('.nav-section').forEach(function(sec) {
+                var title = sec.querySelector('.section-title');
+                if (title && (title.textContent.trim() === '支持' || title.textContent.trim() === '移动端')) {
+                    sec.style.display = 'none';
+                }
+            });
+        } else {
+            document.body.classList.add('ui-mode-advanced');
+            document.body.classList.remove('ui-mode-simple');
+            document.querySelectorAll('.nav-section').forEach(function(sec) {
+                sec.style.display = '';
+            });
+        }
+    } else {
+        document.body.classList.remove('ui-mode-simple', 'ui-mode-advanced');
+    }
+}
+
+function createMobileBottomNav() {
+    if (document.getElementById('mobileBottomNav')) return;
+    var nav = document.createElement('div');
+    nav.id = 'mobileBottomNav';
+    nav.className = 'mobile-bottom-nav';
+    nav.innerHTML = '<div class="mobile-bottom-nav-inner">' +
+        '<button class="mobile-nav-item active" data-page="home"><i class="fas fa-home"></i><span>发现</span></button>' +
+        '<button class="mobile-nav-item" data-page="search"><i class="fas fa-search"></i><span>搜索</span></button>' +
+        '<button class="mobile-nav-item" data-page="favorites"><i class="fas fa-heart"></i><span>收藏</span></button>' +
+        '<button class="mobile-nav-item" data-page="hotlist"><i class="fas fa-fire"></i><span>排行榜</span></button>' +
+        '<button class="mobile-nav-item" data-page="settings" id="mobileNavSettings"><i class="fas fa-cog"></i><span>设置</span></button>' +
+        '</div>';
+    document.body.appendChild(nav);
+
+    var inner = nav.querySelector('.mobile-bottom-nav-inner');
+    nav.querySelectorAll('.mobile-nav-item[data-page]').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            var page = this.dataset.page;
+            inner.querySelectorAll('.mobile-nav-item').forEach(function(it) { it.classList.remove('active'); });
+            this.classList.add('active');
+            switchPage(page);
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('show');
+            }
+            if (window.innerWidth <= 767) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    });
+
+    var settingsBtn = nav.querySelector('#mobileNavSettings');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            inner.querySelectorAll('.mobile-nav-item').forEach(function(it) { it.classList.remove('active'); });
+            this.classList.add('active');
+            switchPage('settings');
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('show');
+            }
+            if (window.innerWidth <= 767) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
+
+    var appContainer = document.querySelector('.app-container');
+    if (appContainer) {
+        document.body.removeChild(nav);
+        appContainer.appendChild(nav);
+    }
+    document.body.style.paddingBottom = '64px';
+}
+
+function removeMobileBottomNav() {
+    var nav = document.getElementById('mobileBottomNav');
+    if (nav) nav.remove();
+    document.body.style.paddingBottom = '';
+    var ac = document.querySelector('.app-container');
+    if (ac) ac.style.paddingBottom = '';
+}
+
+window.addEventListener('resize', debounce(function() {
+    applyUIMode();
+}, 200));
 
 function applyThemeColor(color) {
     document.documentElement.style.setProperty('--primary', color);
@@ -2504,6 +2647,11 @@ function showDevModeWarning() {
 function checkDevMode() {
     var wrap = document.getElementById('devOptionsBtnWrap');
     if (wrap) wrap.style.display = settings.devMode ? 'block' : 'none';
+    var pageGrid = document.getElementById('settingsPageGrid');
+    if (pageGrid) {
+        var pageBtn = pageGrid.querySelector('#devOptionsBtn');
+        if (pageBtn) pageBtn.style.display = settings.devMode ? '' : 'none';
+    }
 }
 
 function updateDevOptionsPage() {
@@ -2851,6 +2999,10 @@ function updateSettingsPage() {
 
     settingsHTML += '<div class="setting-item"><div class="setting-info"><div class="setting-name">字体选择</div><div class="setting-desc">选择界面字体</div></div><select id="fontFamilySelect" style="padding:4px 8px;border:none;background:var(--glass-bg);border-radius:10px;font-size:12px;"><option value="Inter, system-ui, sans-serif" ' + (settings.fontFamily === 'Inter, system-ui, sans-serif' ? 'selected' : '') + '>Inter</option><option value="system-ui, -apple-system, sans-serif" ' + (settings.fontFamily === 'system-ui, -apple-system, sans-serif' ? 'selected' : '') + '>系统默认</option><option value="\'PingFang SC\', \'Microsoft YaHei\', sans-serif" ' + (settings.fontFamily === "'PingFang SC', 'Microsoft YaHei', sans-serif" ? 'selected' : '') + '>苹方/微软雅黑</option><option value="\'Noto Sans SC\', \'Microsoft YaHei\', sans-serif" ' + (settings.fontFamily === "'Noto Sans SC', 'Microsoft YaHei', sans-serif" ? 'selected' : '') + '>Noto Sans SC</option><option value="\'LXGW WenKai\', \'KaiTi\', serif" ' + (settings.fontFamily === "'LXGW WenKai', 'KaiTi', serif" ? 'selected' : '') + '>霞鹜文楷/楷体</option><option value="\'HarmonyOS Sans\', \'PingFang SC\', sans-serif" ' + (settings.fontFamily === "'HarmonyOS Sans', 'PingFang SC', sans-serif" ? 'selected' : '') + '>HarmonyOS Sans</option><option value="\'Courier New\', monospace" ' + (settings.fontFamily === "'Courier New', monospace" ? 'selected' : '') + '>等宽字体</option><option value="\'Georgia\', \'Times New Roman\', serif" ' + (settings.fontFamily === "'Georgia', 'Times New Roman', serif" ? 'selected' : '') + '>Georgia/宋体</option><option value="\'Comic Sans MS\', \'YouYuan\', cursive" ' + (settings.fontFamily === "'ComicSansLocal', 'YouYuanLocal', 'Comic Sans MS', cursive" ? 'selected' : '') + '>Comic Sans/幼圆</option></select></div>';
 
+    settingsHTML += '<div class="setting-item setting-desktop-only"><div class="setting-info"><div class="setting-name">界面风格</div><div class="setting-desc">选择界面显示风格，简洁模式精简非核心元素与动画</div></div><select id="uiModeSelect" style="padding:4px 8px;border:none;background:var(--glass-bg);border-radius:10px;font-size:12px;"><option value="simple" ' + (settings.uiMode === 'simple' ? 'selected' : '') + '>简洁模式</option><option value="advanced" ' + (settings.uiMode === 'advanced' ? 'selected' : '') + '>高级模式</option></select></div>';
+
+    settingsHTML += '<div class="setting-item setting-mobile-only"><div class="setting-info"><div class="setting-name">移动端安卓风格</div><div class="setting-desc">将移动端界面改为简洁的安卓 App 风格，含底部导航栏</div></div><label class="toggle-switch"><input type="checkbox" id="mobileAndroidStyleToggle" ' + (settings.mobileAndroidStyle ? 'checked' : '') + '><span class="toggle-slider"></span></label></div>';
+
     settingsHTML += '<div class="setting-item"><div class="setting-info"><div class="setting-name">大屏幕适配 <span class="hd-badge" style="display:inline-block;font-size:8px;padding:1px 4px;margin-left:0;">HD</span></div><div class="setting-desc">当前屏幕宽度：' + window.innerWidth + 'px，状态：' + largeScreenStatus + '</div></div><div style="font-size:12px;color:var(--primary);">' + (isLargeScreenNow ? '<i class="fas fa-check-circle"></i> HD模式已激活' : '<i class="fas fa-info-circle"></i> 调整窗口宽度≥1100px可启用HD模式') + '</div></div>';
 
     settingsHTML += '</div>';
@@ -2881,6 +3033,33 @@ function updateSettingsPage() {
 
     settingsGrid.innerHTML = settingsHTML;
 
+    var isAndroid = document.body.classList.contains('mobile-android-style');
+    var settingsPageGrid = document.getElementById('settingsPageGrid');
+    if (settingsPageGrid) {
+        settingsPageGrid.innerHTML = settingsHTML;
+    }
+    if (isAndroid) {
+        settingsGrid.innerHTML = '';
+        if (settingsPageGrid) {
+            settingsPageGrid.style.display = 'block';
+            var pageDevBtn = settingsPageGrid.querySelector('#devOptionsBtn');
+            if (pageDevBtn) {
+                pageDevBtn.addEventListener('click', function() {
+                    updateDevOptionsPage();
+                    devOptionsModal.classList.add('active');
+                });
+            }
+            var pageSettingsCloseBtn = settingsPageGrid.querySelector('#settingsCloseBtn');
+            if (pageSettingsCloseBtn) {
+                pageSettingsCloseBtn.style.display = 'none';
+            }
+        }
+    } else {
+        if (settingsPageGrid) {
+            settingsPageGrid.style.display = 'none';
+        }
+    }
+
     // 绑定事件
     document.getElementById('crossfadeToggle').addEventListener('change', function(e) { settings.crossfade = e.target.checked; saveSettings(); showToast('无缝过渡' + (settings.crossfade ? '已开启' : '已关闭'), 'info'); var cp = document.getElementById('crossfadePanel'); var cpParent = document.getElementById('crossfadeParent'); if (cp && cpParent) { if (settings.crossfade) { cp.classList.add('expanded'); cpParent.classList.add('expanded'); } else { cp.classList.remove('expanded'); cpParent.classList.remove('expanded'); } settings.crossfadePanelExpanded = settings.crossfade; saveSettings(); } });
     document.getElementById('crossfadeDurationSelect').addEventListener('change', function(e) { settings.crossfadeDuration = parseInt(e.target.value); saveSettings(); showToast('过渡时长已设为 ' + (settings.crossfadeDuration / 1000) + ' 秒', 'info'); });
@@ -2906,6 +3085,10 @@ function updateSettingsPage() {
     document.getElementById('themeColorPicker').addEventListener('change', function(e) { settings.themeColor = e.target.value; applyThemeColor(settings.themeColor); saveSettings(); showToast('主题颜色已更新', 'success'); });
     document.getElementById('resetThemeColorBtn').addEventListener('click', function(e) { settings.themeColor = '#7c3aed'; applyThemeColor('#7c3aed'); saveSettings(); document.getElementById('themeColorPicker').value = '#7c3aed'; showToast('主题颜色已恢复默认', 'success'); });
     document.getElementById('fontFamilySelect').addEventListener('change', function(e) { settings.fontFamily = e.target.value; applyFontFamily(settings.fontFamily); saveSettings(); showToast('字体已更新', 'success'); });
+    var uiModeSelect = document.getElementById('uiModeSelect');
+    if (uiModeSelect) { uiModeSelect.addEventListener('change', function(e) { settings.uiMode = e.target.value; saveSettings(); applyUIMode(); showToast('界面风格已设为' + (settings.uiMode === 'simple' ? '简洁模式' : '高级模式'), 'info'); }); }
+    var mobileAndroidStyleToggle = document.getElementById('mobileAndroidStyleToggle');
+    if (mobileAndroidStyleToggle) { mobileAndroidStyleToggle.addEventListener('change', function(e) { settings.mobileAndroidStyle = e.target.checked; saveSettings(); applyUIMode(); showToast('移动端安卓风格' + (settings.mobileAndroidStyle ? '已开启' : '已关闭'), 'info'); }); }
 
     function setupSubPanel(parentId, panelId, settingKey) {
         var parent = document.getElementById(parentId);
@@ -5254,6 +5437,8 @@ function showNoLyrics() {
 function openFullscreenPlayer() {
     if (!audioPlayer.src) { showToast('请先选择一首歌曲', 'warning'); return; }
     if (fullscreenPlayer.classList.contains('show')) return;
+    var bottomNav = document.getElementById('mobileBottomNav');
+    if (bottomNav) bottomNav.style.display = 'none';
     var sourceCover = nowPlayingCover;
     var targetCover = fullscreenCover;
     fullscreenPlayer.classList.add('show', 'opening');
@@ -5347,7 +5532,9 @@ function closeFullscreenPlayer() {
         targetCover.style.opacity = '';
         sourceCover.style.transition = savedTransition;
         fullscreenPlayer.classList.remove('show', 'opening', 'closing');
-        document.body.style.overflow = ''
+        document.body.style.overflow = '';
+        var bottomNav = document.getElementById('mobileBottomNav');
+        if (bottomNav) bottomNav.style.display = '';
     }, 300);
 }
 
@@ -5383,7 +5570,7 @@ function displayResults(songs, container, type) {
         var isDownloadDisabled = !isLoggedIn;
         var hasCover = song.picurl && song.picurl.trim() !== '';
         var bgStyle = hasCover ? 'background-image: url(\'' + song.picurl + '\'); background-size: cover; background-position: center;' : '';
-        return '<div class="song-card ' + (isFavorited ? 'favorited' : '') + ' ' + (index === currentIndex ? 'active' : '') + '" data-id="' + song.id + '" style="animation-delay: ' + (index * 0.05) + 's; ' + bgStyle + '"><div class="song-card-bg-blur"></div><div class="song-cover">' + (hasCover ? '<img src="' + song.picurl + '" alt="' + escapeHtml(song.name) + '" onload="this.parentElement.classList.add(\'has-image\')" onerror="this.onerror=null; this.style.display=\'none\'">' : '') + '<i class="fas fa-music"></i>' + (index === currentIndex && isPlaying ? '<div class="song-playing-indicator"><i class="fas fa-play"></i></div>' : '') + '</div><div class="song-info"><div class="song-title"><span class="song-title-text">' + escapeHtml(song.name) + '</span>' + (isFavorited ? '<i class="fas fa-heart" style="color:var(--accent); font-size:12px;"></i>' : '') + '<span class="platform-badge ' + (song.platform === 'kuwo' ? 'kuwo' : 'netease') + '" style="font-size:10px;padding:2px 6px;border-radius:10px;background:' + (song.platform === 'kuwo' ? 'rgba(255,152,0,0.2)' : 'rgba(236,65,65,0.2)') + ';color:' + (song.platform === 'kuwo' ? '#FF9800' : '#EC4141') + ';margin-left:8px;flex-shrink:0;">' + (song.platform === 'kuwo' ? '酷我' : '网易') + '</span></div><div class="song-artist">' + escapeHtml(song.artistsname) + '</div><div class="song-duration"><i class="far fa-clock"></i><span>' + minutes + ':' + seconds + '</span></div></div><div class="song-actions"><button class="action-btn play" data-index="' + index + '"><i class="fas fa-play"></i></button><button class="action-btn add-to-playlist" data-id="' + song.id + '" data-name="' + escapeAttr(song.name) + '" data-artist="' + escapeAttr(song.artistsname) + '" data-album="' + escapeAttr(song.album || '') + '" data-pic="' + escapeAttr(song.picurl || '') + '" data-platform="' + song.platform + '" data-kuwo-rid="' + (song.kuwo_rid || '') + '"><i class="fas fa-plus"></i></button><button class="action-btn favorite ' + (isFavorited ? 'active' : '') + '" data-id="' + song.id + '"><i class="fas ' + (isFavorited ? 'fa-heart' : 'fa-heart') + '"></i></button><button class="action-btn download ' + (isDownloadDisabled ? 'disabled' : '') + '" data-id="' + song.id + '" title="' + (isDownloadDisabled ? '请先登录后下载' : '下载歌曲') + '"><i class="fas fa-download"></i></button></div></div>';
+        return '<div class="song-card ' + (isFavorited ? 'favorited' : '') + ' ' + (_activeSongId && String(song.id) === String(_activeSongId) ? 'active' : '') + '" data-id="' + song.id + '" style="animation-delay: ' + (index * 0.05) + 's; ' + bgStyle + '"><div class="song-card-bg-blur"></div><div class="song-cover">' + (hasCover ? '<img src="' + song.picurl + '" alt="' + escapeHtml(song.name) + '" onload="this.parentElement.classList.add(\'has-image\')" onerror="this.onerror=null; this.style.display=\'none\'">' : '') + '<i class="fas fa-music"></i>' + (_activeSongId && String(song.id) === String(_activeSongId) && isPlaying ? '<div class="song-playing-indicator"><i class="fas fa-play"></i></div>' : '') + '</div><div class="song-info"><div class="song-title"><span class="song-title-text">' + escapeHtml(song.name) + '</span>' + (isFavorited ? '<i class="fas fa-heart" style="color:var(--accent); font-size:12px;"></i>' : '') + '<span class="platform-badge ' + (song.platform === 'kuwo' ? 'kuwo' : 'netease') + '" style="font-size:10px;padding:2px 6px;border-radius:10px;background:' + (song.platform === 'kuwo' ? 'rgba(255,152,0,0.2)' : 'rgba(236,65,65,0.2)') + ';color:' + (song.platform === 'kuwo' ? '#FF9800' : '#EC4141') + ';margin-left:8px;flex-shrink:0;">' + (song.platform === 'kuwo' ? '酷我' : '网易') + '</span></div><div class="song-artist">' + escapeHtml(song.artistsname) + '</div><div class="song-duration"><i class="far fa-clock"></i><span>' + minutes + ':' + seconds + '</span></div></div><div class="song-actions"><button class="action-btn play" data-index="' + index + '"><i class="fas fa-play"></i></button><button class="action-btn add-to-playlist" data-id="' + song.id + '" data-name="' + escapeAttr(song.name) + '" data-artist="' + escapeAttr(song.artistsname) + '" data-album="' + escapeAttr(song.album || '') + '" data-pic="' + escapeAttr(song.picurl || '') + '" data-platform="' + song.platform + '" data-kuwo-rid="' + (song.kuwo_rid || '') + '"><i class="fas fa-plus"></i></button><button class="action-btn favorite ' + (isFavorited ? 'active' : '') + '" data-id="' + song.id + '"><i class="fas ' + (isFavorited ? 'fa-heart' : 'fa-heart') + '"></i></button><button class="action-btn download ' + (isDownloadDisabled ? 'disabled' : '') + '" data-id="' + song.id + '" title="' + (isDownloadDisabled ? '请先登录后下载' : '下载歌曲') + '"><i class="fas fa-download"></i></button></div></div>';
     }, function(card, song, index) {
         bindSongCardEvents(card, song, index, songs);
     }, 'song-card-placeholder');
@@ -5451,7 +5638,7 @@ function displayHistoryResults(songs, container) {
         var lastPlayed = song.historyInfo ? new Date(song.historyInfo.lastPlayed).toLocaleString() : '';
         var playCount = song.historyInfo ? song.historyInfo.playCount : 1;
         var bgStyle = hasCover ? 'background-image: url(\'' + song.picurl + '\'); background-size: cover; background-position: center;' : '';
-        return '<div class="song-card ' + (isFavorited ? 'favorited' : '') + ' ' + (index === currentIndex ? 'active' : '') + '" data-id="' + song.id + '" style="animation-delay: ' + (index * 0.05) + 's; ' + bgStyle + '"><div class="song-card-bg-blur"></div><div class="song-cover">' + (hasCover ? '<img src="' + song.picurl + '" alt="' + escapeHtml(song.name) + '" onload="this.parentElement.classList.add(\'has-image\')" onerror="this.onerror=null; this.style.display=\'none\'">' : '') + '<i class="fas fa-history"></i>' + (index === currentIndex && isPlaying ? '<div class="song-playing-indicator"><i class="fas fa-play"></i></div>' : '') + '</div><div class="song-info"><div class="song-title"><span class="song-title-text">' + escapeHtml(song.name) + '</span>' + (isFavorited ? '<i class="fas fa-heart" style="color:var(--accent); font-size:12px;"></i>' : '') + '<span class="platform-badge ' + (song.platform === 'kuwo' ? 'kuwo' : 'netease') + '" style="font-size:10px;padding:2px 6px;border-radius:10px;background:' + (song.platform === 'kuwo' ? 'rgba(255,152,0,0.2)' : 'rgba(236,65,65,0.2)') + ';color:' + (song.platform === 'kuwo' ? '#FF9800' : '#EC4141') + ';margin-left:8px;flex-shrink:0;">' + (song.platform === 'kuwo' ? '酷我' : '网易') + '</span></div><div class="song-artist">' + escapeHtml(song.artistsname) + '</div><div class="song-duration"><i class="fas fa-history"></i><span>播放 ' + playCount + ' 次</span></div><div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">最后播放: ' + lastPlayed + '</div></div><div class="song-actions"><button class="action-btn play" data-index="' + index + '"><i class="fas fa-play"></i></button><button class="action-btn add-to-playlist" data-id="' + song.id + '" data-name="' + escapeAttr(song.name) + '" data-artist="' + escapeAttr(song.artistsname) + '" data-album="' + escapeAttr(song.album || '') + '" data-pic="' + escapeAttr(song.picurl || '') + '" data-platform="' + song.platform + '" data-kuwo-rid="' + (song.kuwo_rid || '') + '"><i class="fas fa-plus"></i></button><button class="action-btn favorite ' + (isFavorited ? 'active' : '') + '" data-id="' + song.id + '"><i class="fas ' + (isFavorited ? 'fa-heart' : 'fa-heart') + '"></i></button><button class="action-btn download ' + (isDownloadDisabled ? 'disabled' : '') + '" data-id="' + song.id + '" title="' + (isDownloadDisabled ? '请先登录后下载' : '下载歌曲') + '"><i class="fas fa-download"></i></button></div></div>';
+        return '<div class="song-card ' + (isFavorited ? 'favorited' : '') + ' ' + (_activeSongId && String(song.id) === String(_activeSongId) ? 'active' : '') + '" data-id="' + song.id + '" style="animation-delay: ' + (index * 0.05) + 's; ' + bgStyle + '"><div class="song-card-bg-blur"></div><div class="song-cover">' + (hasCover ? '<img src="' + song.picurl + '" alt="' + escapeHtml(song.name) + '" onload="this.parentElement.classList.add(\'has-image\')" onerror="this.onerror=null; this.style.display=\'none\'">' : '') + '<i class="fas fa-history"></i>' + (_activeSongId && String(song.id) === String(_activeSongId) && isPlaying ? '<div class="song-playing-indicator"><i class="fas fa-play"></i></div>' : '') + '</div><div class="song-info"><div class="song-title"><span class="song-title-text">' + escapeHtml(song.name) + '</span>' + (isFavorited ? '<i class="fas fa-heart" style="color:var(--accent); font-size:12px;"></i>' : '') + '<span class="platform-badge ' + (song.platform === 'kuwo' ? 'kuwo' : 'netease') + '" style="font-size:10px;padding:2px 6px;border-radius:10px;background:' + (song.platform === 'kuwo' ? 'rgba(255,152,0,0.2)' : 'rgba(236,65,65,0.2)') + ';color:' + (song.platform === 'kuwo' ? '#FF9800' : '#EC4141') + ';margin-left:8px;flex-shrink:0;">' + (song.platform === 'kuwo' ? '酷我' : '网易') + '</span></div><div class="song-artist">' + escapeHtml(song.artistsname) + '</div><div class="song-duration"><i class="fas fa-history"></i><span>播放 ' + playCount + ' 次</span></div><div style="font-size:10px;color:var(--text-secondary);margin-top:3px;">最后播放: ' + lastPlayed + '</div></div><div class="song-actions"><button class="action-btn play" data-index="' + index + '"><i class="fas fa-play"></i></button><button class="action-btn add-to-playlist" data-id="' + song.id + '" data-name="' + escapeAttr(song.name) + '" data-artist="' + escapeAttr(song.artistsname) + '" data-album="' + escapeAttr(song.album || '') + '" data-pic="' + escapeAttr(song.picurl || '') + '" data-platform="' + song.platform + '" data-kuwo-rid="' + (song.kuwo_rid || '') + '"><i class="fas fa-plus"></i></button><button class="action-btn favorite ' + (isFavorited ? 'active' : '') + '" data-id="' + song.id + '"><i class="fas ' + (isFavorited ? 'fa-heart' : 'fa-heart') + '"></i></button><button class="action-btn download ' + (isDownloadDisabled ? 'disabled' : '') + '" data-id="' + song.id + '" title="' + (isDownloadDisabled ? '请先登录后下载' : '下载歌曲') + '"><i class="fas fa-download"></i></button></div></div>';
     }, function(card, song, index) {
         bindSongCardEvents(card, song, index, songs);
     }, 'song-card-placeholder');
@@ -5465,10 +5652,24 @@ function displayEmptyResults(container, title, message) {
     container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><h3>' + title + '</h3><p>' + message + '</p></div>';
 }
 function switchPage(page) {
+    if (page === currentPage) return;
     if (settings.rememberLastPosition) saveCurrentPagePosition();
+    if (!_isPoppingState) {
+        _navStack.push(page);
+        history.pushState({ page: page }, '', window.location.href);
+    }
     pageContents.forEach(function(content) { content.classList.remove('active'); });
     var target = document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1));
-    if (target) { target.classList.add('active'); currentPage = page; if (page === 'hotlist') setTimeout(function() { if (!hotSongList || hotSongList.children.length === 0 || hotSongList.innerHTML.includes('empty-state')) loadChartByType(currentChartType); }, 100); if (page === 'history') updateHistoryPage(); if (page === 'favorites') updateFavoritesPage(); if (page === 'playlists') updatePlaylistsPage(); else if (playlistEditMode) togglePlaylistEditMode(); if (page === 'playlistDetail') { if (currentPlaylistId) updatePlaylistDetailPage(currentPlaylistId); } else if (playlistSongsEditMode) togglePlaylistSongsEditMode(); }
+    if (target) { target.classList.add('active'); currentPage = page; if (page === 'hotlist') setTimeout(function() { if (!hotSongList || hotSongList.children.length === 0 || hotSongList.innerHTML.includes('empty-state')) loadChartByType(currentChartType); }, 100); if (page === 'history') updateHistoryPage(); if (page === 'favorites') updateFavoritesPage(); if (page === 'playlists') updatePlaylistsPage(); else if (playlistEditMode) togglePlaylistEditMode(); if (page === 'playlistDetail') { if (currentPlaylistId) updatePlaylistDetailPage(currentPlaylistId); } else if (playlistSongsEditMode) togglePlaylistSongsEditMode(); if (page === 'settings') updateSettingsPage(); }
+    var mobileNav = document.getElementById('mobileBottomNav');
+    if (mobileNav) {
+        var inner = mobileNav.querySelector('.mobile-bottom-nav-inner');
+        if (inner) {
+            inner.querySelectorAll('.mobile-nav-item').forEach(function(it) { it.classList.remove('active'); });
+            var navItem = inner.querySelector('.mobile-nav-item[data-page="' + page + '"]');
+            if (navItem) navItem.classList.add('active');
+        }
+    }
 }
 function setActiveNav(activeNav) {
     navItems.forEach(function(nav) { nav.classList.remove('active'); });
@@ -5902,6 +6103,12 @@ var originalSwitchPage = switchPage;
 switchPage = function(page) {
     if (batchMode) exitBatchMode();
     originalSwitchPage(page);
+    var bottomNav = document.getElementById('mobileBottomNav');
+    if (bottomNav) {
+        bottomNav.querySelectorAll('.mobile-nav-item').forEach(function(it) {
+            it.classList.toggle('active', it.dataset.page === page);
+        });
+    }
 };
 
 // 在 playSong 中更新队列面板

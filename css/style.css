@@ -3157,6 +3157,7 @@ body.light-theme .fullscreen-dynamic-bg {
 
 @media (max-width: 992px) {
     .sidebar {
+        z-index: 1001;
         transform: translateX(-100%);
         filter: blur(6px);
         transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1), filter 0.3s ease;
@@ -3166,6 +3167,9 @@ body.light-theme .fullscreen-dynamic-bg {
         transform: translateX(0);
         filter: blur(0);
         box-shadow: 2px 0 28px rgba(0, 0, 0, 0.3);
+    }
+    .overlay {
+        z-index: 1000;
     }
     .overlay.show {
         display: block;
@@ -5343,4 +5347,393 @@ body.liquid-glass-mode.light-theme .setting-item {
 body.liquid-glass-mode.light-theme .setting-item:hover {
     background: rgba(255, 255, 255, 0.7) !important;
     border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ===== 设置项响应式可见性 ===== */
+@media (min-width: 768px) {
+    .setting-mobile-only { display: none !important; }
+}
+@media (max-width: 767px) {
+    .setting-desktop-only { display: none !important; }
+}
+
+/* ===== 桌面端简洁模式 ===== */
+body.ui-mode-simple .song-card {
+    animation: none !important;
+    transition: box-shadow 0.15s ease !important;
+}
+body.ui-mode-simple .song-card:hover {
+    transform: none !important;
+}
+body.ui-mode-simple .song-card .song-card-bg-blur {
+    opacity: 0 !important;
+}
+body.ui-mode-simple .song-card .song-cover .fa-music {
+    font-size: 28px !important;
+}
+body.ui-mode-simple .content-card {
+    border-radius: 12px !important;
+    padding: 16px !important;
+}
+body.ui-mode-simple .top-nav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body.ui-mode-simple .sidebar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body.ui-mode-simple .song-cover {
+    border-radius: 8px !important;
+}
+body.ui-mode-simple .song-cover img {
+    border-radius: 8px !important;
+}
+body.ui-mode-simple .player-cover {
+    animation: none !important;
+}
+body.ui-mode-simple .dynamic-background.active {
+    opacity: 0.3 !important;
+}
+body.ui-mode-simple .platform-badge {
+    display: none !important;
+}
+body.ui-mode-simple .song-duration {
+    display: none !important;
+}
+body.ui-mode-simple #donationBtn,
+body.ui-mode-simple #downloadAppBtn {
+    display: none !important;
+}
+
+/* ===== 移动端安卓风格 ===== */
+body.mobile-android-style .top-nav {
+    padding: 8px 12px;
+    height: 48px;
+}
+body.mobile-android-style .logo img.logo-icon {
+    display: none !important;
+}
+body.mobile-android-style .logo span {
+    font-size: 16px;
+}
+body.mobile-android-style .nav-search-wrapper { display: none !important; }
+body.mobile-android-style .platform-dropdown:not(.mobile) { display: none !important; }
+body.mobile-android-style .hamburger-menu {
+    display: flex !important;
+    width: 36px;
+    height: 36px;
+}
+body.mobile-android-style .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+body.mobile-android-style .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    box-shadow: none;
+}
+body.mobile-android-style .sidebar.active {
+    transform: translateX(0);
+    box-shadow: 4px 0 28px rgba(0, 0, 0, 0.4);
+}
+body.mobile-android-style .mobile-search-card {
+    display: block !important;
+    margin: 8px 12px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+body.mobile-android-style .mobile-search-card .search-input {
+    height: 40px;
+    font-size: 14px;
+    border-radius: 24px;
+}
+body.mobile-android-style .song-card {
+    animation: none !important;
+    border-radius: 14px !important;
+    margin-bottom: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+}
+body.mobile-android-style .song-card:active {
+    transform: scale(0.98) !important;
+}
+body.mobile-android-style .song-card .song-card-bg-blur {
+    opacity: 0.15 !important;
+}
+body.mobile-android-style .song-cover {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0;
+}
+body.mobile-android-style .song-cover img {
+    border-radius: 10px !important;
+}
+body.mobile-android-style .song-actions {
+    gap: 4px !important;
+}
+body.mobile-android-style .action-btn {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 12px !important;
+}
+
+/* 安卓风格 - 去除 content-card 样式 */
+body.mobile-android-style .content-card {
+    margin: 8px 12px;
+    border-radius: 0;
+    padding: 12px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body.mobile-android-style .section-header {
+    padding: 8px 16px;
+}
+body.mobile-android-style .section-title-text {
+    font-size: 18px;
+}
+
+/* 安卓风格 - 播放栏在底部导航上方，小圆角 */
+body.mobile-android-style .player-container {
+    height: 56px !important;
+    padding: 6px 10px !important;
+    bottom: 60px !important;
+    border-radius: 16px 16px 0 0 !important;
+    margin: 0 8px;
+    width: calc(100% - 16px) !important;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15) !important;
+}
+body.mobile-android-style .player-cover {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+}
+body.mobile-android-style .player-info {
+    margin-left: 8px !important;
+}
+body.mobile-android-style #nowPlayingTitle {
+    font-size: 13px !important;
+}
+body.mobile-android-style #nowPlayingArtist {
+    font-size: 11px !important;
+}
+body.mobile-android-style .player-controls {
+    gap: 6px !important;
+}
+body.mobile-android-style .player-controls .control-btn {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 14px !important;
+}
+
+/* 底部导航栏 - 基础 */
+.mobile-bottom-nav {
+    display: none;
+}
+body.mobile-android-style .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    z-index: 999;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.mobile-bottom-nav-inner {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    transition: opacity 0.25s ease;
+}
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 56px;
+}
+.mobile-nav-item i {
+    font-size: 20px;
+}
+.mobile-nav-item.active {
+    color: var(--primary);
+}
+.mobile-nav-item:active {
+    transform: scale(0.9);
+}
+
+/* 安卓风格 - 设置页面样式 */
+#pageSettings {
+    padding: 16px;
+    padding-bottom: 120px;
+}
+.settings-page-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--glass-border);
+}
+.settings-page-header .btn {
+    width: auto;
+    padding: 6px 12px;
+    font-size: 14px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.settings-page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+.settings-page-grid .settings-section {
+    margin-bottom: 20px;
+}
+.settings-page-grid .setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    padding: 14px 0 !important;
+    border: none !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    transition: none !important;
+}
+.settings-page-grid .setting-item:hover {
+    background: transparent !important;
+    transform: none !important;
+    border-color: var(--glass-border) !important;
+}
+.settings-page-grid .setting-info {
+    flex: 1;
+    min-width: 0;
+}
+.settings-page-grid .setting-item:last-child {
+    border-bottom: none !important;
+}
+.settings-page-grid .setting-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.settings-page-grid .setting-desc {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+.settings-page-grid .setting-item .toggle-switch {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+.settings-page-grid .setting-item select,
+.settings-page-grid .setting-item input[type="color"] {
+    flex-shrink: 0;
+}
+.settings-page-grid .sub-settings-panel .setting-item {
+    padding: 8px 0 !important;
+    border-bottom: none !important;
+}
+.settings-page-grid .setting-parent {
+    cursor: pointer;
+}
+.settings-page-grid .setting-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+.settings-page-grid .setting-parent.expanded .setting-arrow {
+    transform: rotate(180deg);
+}
+
+/* 安卓风格 - 模态窗全屏 */
+@media (max-width: 767px) {
+    body.mobile-android-style .modal {
+        align-items: flex-end !important;
+    }
+    body.mobile-android-style #announcementModal {
+        align-items: center !important;
+    }
+    body.mobile-android-style #announcementModal .modal-content {
+        width: 90% !important;
+        max-width: 520px !important;
+        border-radius: 20px !important;
+        max-height: 85vh !important;
+        height: auto !important;
+    }
+    body.mobile-android-style .modal:not(#announcementModal):not(#settingsModal):not(#aboutModal):not(#donationModal) .modal-content {
+        border-radius: 20px 20px 0 0 !important;
+        max-height: 92vh !important;
+        width: 100% !important;
+    }
+
+    body.mobile-android-style #settingsModal .modal-content,
+    body.mobile-android-style #aboutModal .modal-content,
+    body.mobile-android-style #donationModal .modal-content {
+        border-radius: 0 !important;
+        max-height: 100vh !important;
+        height: 100vh !important;
+        width: 100% !important;
+        animation: slideUpAndroid 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    body.mobile-android-style #settingsModal .close-btn,
+    body.mobile-android-style #aboutModal .close-btn {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        z-index: 10;
+    }
+}
+
+@keyframes slideUpAndroid {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
